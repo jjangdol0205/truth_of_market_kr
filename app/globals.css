@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-toss-bg: #121212;
+  --color-toss-card: #1C1C1E;
+  --color-toss-red: #F04452;
+  --color-toss-blue: #3182F6;
+  --color-toss-border: #2C2C2E;
+}
+
+@layer base {
+  body {
+    @apply bg-toss-bg text-zinc-100 font-sans antialiased;
+  }
+}
+
+/* Custom Scrollbar for "Premium" feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* ANTI-COPY & ANTI-PRINT PROTECTION */
+@media print {
+  body {
+    display: none !important;
+  }
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -18,7 +18,7 @@ export default function StockCard({ ticker, name, price, changePercent, isFreeSa
 
     return (
         <Link href={`/hub/${ticker}`}>
-            <div className="bg-toss-card rounded-2xl p-5 hover:scale-105 transition-transform duration-300 cursor-pointer flex justify-between items-center group">
+            <div className="bg-[#18181A]/80 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex justify-between items-center group">
                 <div className="flex items-center gap-4">
                     <CompanyLogo
                         ticker={ticker}
@@ -35,7 +35,7 @@ export default function StockCard({ ticker, name, price, changePercent, isFreeSa
                                 </span>
                             )}
                         </div>
-                        <p className="text-zinc-500  text-sm">{ticker}</p>
+                        {ticker !== name && <p className="text-zinc-500 text-sm">{ticker}</p>}
                     </div>
                 </div>
 

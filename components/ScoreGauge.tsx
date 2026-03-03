@@ -14,11 +14,11 @@ export default function ScoreGauge({ scoreObj, scoreColor }: { scoreObj: ScoreOb
     const dashOffset = dashArray * (1 - score / 100);
 
     let strokeColor = "#9ca3af";
-    let label = "중립 (NEUTRAL)";
-    if (score >= 80) { strokeColor = "#ef4444"; label = "강력 매수 (STRONG BUY)"; }
-    else if (score >= 60) { strokeColor = "#f87171"; label = "매수 (BUY)"; }
-    else if (score <= 20) { strokeColor = "#3b82f6"; label = "강력 매도 (STRONG SELL)"; }
-    else if (score <= 40) { strokeColor = "#60a5fa"; label = "매도 (SELL)"; }
+    let label = "중립";
+    if (score >= 80) { strokeColor = "#ef4444"; label = "강력 매수"; }
+    else if (score >= 60) { strokeColor = "#f87171"; label = "매수"; }
+    else if (score <= 20) { strokeColor = "#3b82f6"; label = "강력 매도"; }
+    else if (score <= 40) { strokeColor = "#60a5fa"; label = "매도"; }
 
     return (
         <>
@@ -27,8 +27,8 @@ export default function ScoreGauge({ scoreObj, scoreColor }: { scoreObj: ScoreOb
                 onClick={() => setIsOpen(true)}
             >
                 <div className="text-sm font-bold text-toss-red mb-2 group-hover:text-amber-400 transition-colors flex items-center gap-2">
-                    투자 매력도 지수 (INVESTMENT SCORE)
-                    <span className="text-xs font-normal text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">상세 분석 보기 📊</span>
+                    투자 매력도 지수
+                    <span className="text-xs font-normal text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">상세 점수 보기 📊</span>
                 </div>
 
                 <svg viewBox="0 0 200 120" className="w-56 h-36 drop-shadow-2xl">

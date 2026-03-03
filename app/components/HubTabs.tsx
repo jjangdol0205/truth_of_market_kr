@@ -22,9 +22,9 @@ export default function HubTabs({ ticker, reports }: HubTabsProps) {
     // We can remove the mock data since we are now mapping actual `earningsReports`
 
     return (
-        <div className="w-full mt-12 bg-toss-card/40 border border-toss-border rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full mt-12 bg-[#18181A]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
             {/* Tab Navigation */}
-            <div className="flex border-b border-toss-border bg-[#09090b]">
+            <div className="flex border-b border-white/5 bg-[#0B0B0D]/50 backdrop-blur-md">
                 <button
                     onClick={() => setActiveTab("archive")}
                     className={`flex-1 p-5 text-sm font-bold uppercase tracking-tight flex items-center justify-center gap-2 transition-colors ${activeTab === "archive" ? "bg-zinc-900 text-indigo-400 border-b-2 border-indigo-400" : "text-zinc-500 hover:text-white hover:bg-zinc-900/50"}`}
@@ -67,13 +67,13 @@ export default function HubTabs({ ticker, reports }: HubTabsProps) {
                                     cleanMarkdown = cleanMarkdown.replace(/<!--[\s\S]*?-->/g, '');
 
                                     return (
-                                        <Link key={report.id} href={`/report/${report.id}`} className="block border border-toss-border rounded-2xl overflow-hidden bg-toss-card transition-all hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.1)] group">
-                                            <div className="w-full text-left bg-zinc-900/40 group-hover:bg-zinc-800/80 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
+                                        <Link key={report.id} href={`/report/${report.id}`} className="block border border-white/5 rounded-3xl overflow-hidden bg-[#18181A]/50 transition-all hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] group">
+                                            <div className="w-full text-left bg-transparent group-hover:bg-white/5 p-7 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <Calendar className="w-4 h-4 text-indigo-500/50" />
                                                         <span className="text-xs  text-zinc-400 font-bold uppercase tracking-tight">
-                                                            REPORT #{report.id} • {new Date(report.created_at).toISOString().split('T')[0]}
+                                                            리포트 #{report.id} • {new Date(report.created_at).toISOString().split('T')[0]}
                                                         </span>
                                                     </div>
                                                     <h4 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function HubTabs({ ticker, reports }: HubTabsProps) {
                                                     <div className="text-right hidden sm:block">
                                                         <p className="text-xs text-zinc-500 mb-1  uppercase tracking-tight">AI 요약</p>
                                                         <p className={`font-black  tracking-tight ${report.verdict === 'BUY' ? 'text-toss-red' : report.verdict === 'SELL' ? 'text-toss-blue' : 'text-yellow-500'}`}>
-                                                            {report.verdict || "HOLD"}
+                                                            {report.verdict === 'BUY' ? '매수' : report.verdict === 'SELL' ? '매도' : '보유'}
                                                         </p>
                                                     </div>
                                                     <div className={`p-4 rounded-2xl border flex flex-col items-center justify-center min-w-[90px] ${isGood ? 'bg-red-950/30 border-toss-red/30' : isBad ? 'bg-blue-950/30 border-toss-blue/30' : 'bg-yellow-950/30 border-yellow-500/30'}`}>
@@ -106,7 +106,7 @@ export default function HubTabs({ ticker, reports }: HubTabsProps) {
                 {activeTab === "earnings" && (
                     <div className="space-y-6 animate-in fade-in duration-500">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-2xl font-black text-white">실적 발표 (Earnings Timeline) <span className="text-sm font-medium text-indigo-500 ml-2 border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 rounded">실시간 DB 연동</span></h3>
+                            <h3 className="text-2xl font-black text-white">실적 발표 일정 및 요약 <span className="text-sm font-medium text-indigo-500 ml-2 border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 rounded">실시간 DB 연동</span></h3>
                             <span className="text-zinc-500  text-sm">{earningsReports.length} 건 발표됨</span>
                         </div>
 
@@ -209,7 +209,7 @@ export default function HubTabs({ ticker, reports }: HubTabsProps) {
                                                             <p className="text-indigo-100 text-sm leading-relaxed bg-indigo-950/20 p-4 rounded-2xl border border-indigo-900/50 relative overflow-hidden flex flex-col justify-between h-full">
                                                                 <span className="relative z-10">{parsed.ai_interpretation}</span>
                                                                 <span className="relative z-10 w-fit mt-4 px-2 py-1 border border-indigo-500/50 bg-indigo-500/10 text-indigo-400 text-xs  font-bold uppercase rounded">
-                                                                    AI 최종 판정: {parsed.verdict || report.verdict}
+                                                                    AI 최종 판정: {(parsed.verdict || report.verdict) === 'BUY' ? '매수' : (parsed.verdict || report.verdict) === 'SELL' ? '매도' : '보유'}
                                                                 </span>
                                                                 <span className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></span>
                                                             </p>

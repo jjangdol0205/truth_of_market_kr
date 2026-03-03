@@ -41,7 +41,7 @@ export default function SocialProof() {
                 <div className="bg-toss-card border border-toss-border p-6 rounded-3xl hover:border-toss-red/30 transition-colors">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-3">
-                            <span className="text-xl font-bold text-white">000660</span>
+                            <span className="text-xl font-bold text-white">SK하이닉스</span>
                             <span className="bg-toss-red/20 text-toss-red text-xs px-2 py-1 rounded font-bold">매수 추천</span>
                         </div>
                         <span className="text-toss-red font-bold">+18.4%</span>
@@ -53,7 +53,7 @@ export default function SocialProof() {
                 <div className="bg-toss-card border border-toss-border p-6 rounded-3xl hover:border-toss-blue/30 transition-colors">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-3">
-                            <span className="text-xl font-bold text-white">035420</span>
+                            <span className="text-xl font-bold text-white">NAVER</span>
                             <span className="bg-toss-blue/20 text-toss-blue text-xs px-2 py-1 rounded font-bold">매도 추천</span>
                         </div>
                         <span className="text-toss-blue font-bold">-12.1%</span>

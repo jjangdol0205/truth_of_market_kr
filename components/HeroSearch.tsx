@@ -17,18 +17,17 @@ export default function HeroSearch() {
 
     return (
         <div className="max-w-xl mx-auto mt-8 flex flex-col items-center gap-4">
-            <form onSubmit={handleSearch} className="w-full relative shadow-2xl">
+            <form onSubmit={handleSearch} className="w-full relative shadow-2xl group">
                 <input
                     type="text"
-                    placeholder="종목명 또는 심볼 검색 (예: 005930, TSLA)"
-                    className="w-full bg-toss-card border-none rounded-full py-4 pl-6 pr-14 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-toss-blue transition-all text-lg uppercase shadow-sm"
+                    placeholder="기업명 검색 (예: 삼성전자, 카카오)"
+                    className="w-full bg-[#18181a]/80 backdrop-blur-md border border-white/5 rounded-3xl py-5 pl-8 pr-16 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-toss-blue/50 focus:border-toss-blue/50 transition-all text-lg shadow-sm hover:border-white/10"
                     value={ticker}
                     onChange={(e) => setTicker(e.target.value)}
-                    maxLength={6}
                 />
                 <button
                     type="submit"
-                    className="absolute right-2 top-2 bottom-2 bg-toss-blue hover:bg-blue-600 text-white p-2 rounded-full transition-all flex items-center justify-center w-12"
+                    className="absolute right-3 top-3 bottom-3 bg-toss-blue hover:bg-blue-500 text-white p-2 rounded-2xl transition-all flex items-center justify-center w-12 shadow-[0_0_15px_rgba(49,130,246,0.3)] hover:shadow-[0_0_20px_rgba(49,130,246,0.6)]"
                 >
                     <Search className="w-5 h-5 font-bold" />
                 </button>

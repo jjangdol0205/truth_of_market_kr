@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from 'react';
 
-export default function TradingViewWidget({ ticker }: { ticker: string }) {
+export default function TradingViewWidget({ ticker, queryTicker }: { ticker: string; queryTicker?: string }) {
   const containerId = `tv_chart_${ticker}`;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -12,10 +12,12 @@ export default function TradingViewWidget({ ticker }: { ticker: string }) {
     script.onload = () => {
       if (window.TradingView && containerRef.current) {
         let tvSymbol = ticker.trim();
-        if (tvSymbol.length === 6 && !isNaN(Number(tvSymbol))) {
+        // If queryTicker is provided (e.g. "005930.KS"), format it as KRX:005930
+        if (queryTicker) {
+          const rawSymbol = queryTicker.split('.')[0];
+          tvSymbol = `KRX:${rawSymbol}`;
+        } else if (tvSymbol.length === 6 && !isNaN(Number(tvSymbol))) {
           tvSymbol = `KRX:${tvSymbol}`;
-        } else if (tvSymbol === "삼성전자") {
-          tvSymbol = "KRX:005930";
         }
 
         new window.TradingView.widget({

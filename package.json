@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tosspayments/tosspayments-sdk": "^2.5.0",
+    "adm-zip": "^0.5.16",
     "ai": "^6.0.97",
     "dotenv": "^17.3.1",
     "lucide-react": "^0.574.0",
@@ -26,7 +27,8 @@
     "react-gauge-component": "^2.0.26",
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
-    "resend": "^6.9.2"
+    "resend": "^6.9.2",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

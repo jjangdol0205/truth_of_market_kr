@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "./lib/supabase";
 
 import { createClient } from "@/utils/supabase/server";
+import { fetchDartFinancials } from "@/utils/dart";
 
 export async function analyzeTicker(tickerInput: string, reportType: "research" | "earnings" = "research", quarter: string = "") {
     // ENFORCE ADMIN SECURITY ON THE SERVER ACTION
@@ -16,34 +17,19 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
 
     let ticker = tickerInput.trim();
 
-    // 0. Resolve Company Name to Ticker (e.g. "삼성전자" -> "005930")
-    if (!/^[a-zA-Z0-9.\-]+$/.test(ticker)) {
-        try {
-            console.log(`Resolving Korean name: ${ticker}`);
-            const searchUrl = 'https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker);
-            const searchRes = await fetch(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-            if (searchRes.ok) {
-                const searchData = await searchRes.json();
-                // Find the first valid Korean stock match (.KS or .KQ)
-                const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
-                if (koStock) {
-                    ticker = koStock.symbol.replace('.KS', '').replace('.KQ', '');
-                    console.log(`Resolved "${tickerInput}" to Ticker: ${ticker}`);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to resolve company name to ticker:", e);
-        }
-    }
-
-    // PRE-VALIDATION REMOVED: Yahoo Finance API incorrectly blocks Korean tickers like 005930.
-    // We let the AI natively handle the ticker.
+    // The user inputs the company name natively (e.g., "삼성전자").
+    // We intentionally DO NOT resolve this to a numeric ticker, 
+    // because we want Gemini, Supabase, and the UI to natively use the Korean company name.
 
     // 1. 비밀 금고(.env.local)에서 키 꺼내기
     const apiKey = process.env.GEMINI_API_KEY;
     // Add dynamically current Date to anchor the AI to the live present timeline
     const today = new Date().toISOString().split('T')[0];
     if (!apiKey) return "Error: API Key not found.";
+
+    // 1.5 DART 전자공시 데이터 공식 발췌 (오피셜 데이터 주입)
+    const dartData = await fetchDartFinancials(ticker);
+    const dartContext = dartData ? `\n\n================================\n**CRITICAL DART FINANCIAL DATA (OFFICIAL)**\n${dartData}\n================================\n\n` : "";
 
     // 2. 제미나이 연결
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -73,7 +59,7 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
     - **TODAY IS ${today}. YOU ARE IN THE YEAR 2026.**
     - All of your analytics, fundamental health checks, trailing twelves months (TTM), and macro context MUST reflect the reality up to and including **${today}**.
     - DO NOT use old data from 2024. Pull the most recent earnings, the most recent product releases, and the absolute latest market conditions.
-
+    ${dartContext}
     **STRICT SOURCE REQUIREMENT**:
     - Use \`Google Search\` to find the absolute latest real-time data and news for ${tickerInput} (${ticker}) up to ${today}.
     - **CRITICAL FOR KOREAN STOCKS**: If this is a Korean company, you MUST search and extract data from the following authoritative Korean sources:
@@ -142,8 +128,9 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
     
     **STRICT TEMPORAL ANCHOR (CRITICAL)**:
     - **TODAY IS ${today}. YOU ARE IN THE YEAR 2026.**
+    - **TODAY IS ${today}. YOU ARE IN THE YEAR 2026.**
     - Only report on the absolutely most recently closed Quarter before ${today}.
-    
+    ${dartContext}
     **STRICT SOURCE REQUIREMENT**:
     - Use \`Google Search\` to pull the exact Wall Street consensus estimates AND the resulting actual figures for the ${quarter} earnings release for ${ticker}. (Or the equivalent consensus for Korean stocks).
 

@@ -1,17 +1,19 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-toss-bg: #121212;
-  --color-toss-card: #1C1C1E;
-  --color-toss-red: #F04452;
-  --color-toss-blue: #3182F6;
-  --color-toss-border: #2C2C2E;
+  --color-toss-bg: #0B0B0D; /* Slightly richer dark gray for premium feel */
+  --color-toss-card: #18181A; /* Adjusted for better contrast with soft bg */
+  --color-toss-red: #FA0050; /* A slightly more vibrant, aggressive neon red */
+  --color-toss-blue: #0077FF; /* True Toss bright blue */
+  --color-toss-border: rgba(255, 255, 255, 0.08); /* Sophisticated thin border */
 }
 
 @layer base {
   body {
-    @apply bg-toss-bg text-zinc-100 font-sans antialiased;
+    @apply bg-toss-bg text-zinc-100 antialiased;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   }
 }
 

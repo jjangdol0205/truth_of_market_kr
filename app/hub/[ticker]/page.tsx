@@ -37,7 +37,23 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
     let analystCount = 0;
 
     let queryTicker = ticker;
-    if (/^\d+$/.test(ticker)) {
+    if (/[가-힣]/.test(ticker)) {
+        try {
+            const searchRes = await fetch('https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker), {
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+                next: { revalidate: 86400 } // Cache heavily
+            });
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
+                if (koStock) {
+                    queryTicker = koStock.symbol;
+                }
+            }
+        } catch (e) {
+            console.error(`Failed to resolve name ${ticker}`, e);
+        }
+    } else if (/^\d+$/.test(ticker)) {
         queryTicker = `${ticker}.KS`;
     } else if (ticker === "LNK") {
         queryTicker = "LINK-USD";
@@ -103,7 +119,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                         />
                         <div>
                             <h1 className="text-5xl font-black tracking-tighter text-white mb-1">
-                                {getKoreanName(ticker)}
+                                {ticker}
                             </h1>
                             <p className="text-indigo-500 flex items-center  text-xs font-bold tracking-tight uppercase mb-1">
                                 <Activity className="w-3 h-3 mr-1" /> 인증된 기업 허브
@@ -157,8 +173,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                         <span className="w-3 h-3 rounded-full bg-toss-red shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse"></span>
                         최신 AI 심층 분석
                     </h2>
-                    {/* Re-use our beautiful ReportCard component! */}
-                    <ReportCard report={latestResearch} />
+                    <ReportCard report={latestResearch} queryTicker={queryTicker} />
                 </div>
             ) : (
                 /* Securely Bound TradingView Widget Backup */
@@ -168,7 +183,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                     </div>
                     {/* Render Widget */}
                     <div className="w-full h-full relative z-10">
-                        <TradingViewWidget ticker={ticker} />
+                        <TradingViewWidget ticker={ticker} queryTicker={queryTicker} />
                     </div>
                 </section>
             )}

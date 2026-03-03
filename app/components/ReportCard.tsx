@@ -23,9 +23,10 @@ interface ReportCardProps {
         financial_table?: any;
         analysis_text?: string;
     };
+    queryTicker?: string;
 }
 
-export default function ReportCard({ report }: ReportCardProps) {
+export default function ReportCard({ report, queryTicker }: ReportCardProps) {
     const [expanded, setExpanded] = useState(false);
     const [isScoreOpen, setIsScoreOpen] = useState(false);
     const score = report.investment_score ?? report.risk_score ?? 50;
@@ -64,9 +65,9 @@ export default function ReportCard({ report }: ReportCardProps) {
     const bearCase = report.bear_case_summary || parsedAnalysis?.bear_case_summary || report.reality_check || parsedAnalysis?.reality_check || "데이터가 없습니다.";
 
     return (
-        <div className="bg-[#18181b] border border-[#27272a] rounded-2xl overflow-hidden shadow-2xl font-sans mb-8 transition-all hover:border-[#3f3f46]">
+        <div className="bg-[#18181a]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-2xl font-sans mb-8 transition-all hover:border-white/10 hover:shadow-[0_0_30px_rgba(0,0,0,0.5)]">
             {/* Header: Ticker & Badges */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-[#27272a]">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-white/5">
                 <div className="flex items-center gap-3">
                     <span className="text-2xl font-bold text-white tracking-tight">{report.ticker}</span>
                     <span className="text-xs  text-zinc-500 bg-zinc-900 px-2 py-1 rounded">
@@ -77,7 +78,7 @@ export default function ReportCard({ report }: ReportCardProps) {
                     report.verdict === 'SELL' ? 'bg-toss-blue/10 text-toss-blue border border-toss-blue/20' :
                         'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
                     }`}>
-                    {report.verdict}
+                    {report.verdict === 'BUY' ? '매수' : report.verdict === 'SELL' ? '매도' : '보유'}
                 </div>
             </div>
 
@@ -86,7 +87,7 @@ export default function ReportCard({ report }: ReportCardProps) {
 
                 {/* 1. Top Left: Investment Gauge (Span 4) */}
                 <div
-                    className="md:col-span-4 bg-[#09090b] rounded-2xl border border-[#27272a] p-6 flex flex-col items-center justify-center relative min-h-[200px] cursor-pointer hover:border-[#3f3f46] transition-colors group"
+                    className="md:col-span-4 bg-[#0B0B0D]/50 rounded-3xl border border-white/5 p-6 flex flex-col items-center justify-center relative min-h-[200px] cursor-pointer hover:border-white/10 transition-colors group"
                     onClick={() => setIsScoreOpen(true)}
                 >
                     <InvestmentGauge score={score} />
@@ -140,7 +141,7 @@ export default function ReportCard({ report }: ReportCardProps) {
                 )}
 
                 {/* 2. Top Right: Analyst Summary (Span 8) */}
-                <div className="md:col-span-8 bg-[#09090b] rounded-2xl border border-[#27272a] p-6 flex flex-col justify-center">
+                <div className="md:col-span-8 bg-[#0B0B0D]/50 rounded-3xl border border-white/5 p-6 flex flex-col justify-center transition-all hover:border-white/10">
                     <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">AI 핵심 요약</h4>
                     <p className="text-zinc-100 text-lg font-medium leading-relaxed">
                         {report.one_line_summary}
@@ -148,27 +149,27 @@ export default function ReportCard({ report }: ReportCardProps) {
                 </div>
 
                 {/* 3. Middle: Chart (Span 12) */}
-                <div className="md:col-span-12 h-[350px] bg-[#09090b] rounded-2xl border border-[#27272a] overflow-hidden relative">
-                    <TradingViewWidget ticker={report.ticker} />
+                <div className="md:col-span-12 h-[350px] bg-[#0B0B0D]/50 rounded-3xl border border-white/5 overflow-hidden relative">
+                    <TradingViewWidget ticker={report.ticker} queryTicker={queryTicker} />
                 </div>
 
                 {/* 4. Bottom Split: Bull vs Bear (Span 6 each) */}
-                <div className="md:col-span-6 bg-[#09090b] rounded-2xl border border-red-900/30 p-6 relative overflow-hidden group">
+                <div className="md:col-span-6 bg-[#0B0B0D]/50 rounded-3xl border border-toss-red/20 p-6 relative overflow-hidden group hover:border-toss-red/40 transition-colors">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-toss-red to-transparent opacity-50"></div>
                     <h4 className="text-toss-red font-bold mb-3 flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-toss-red"></span>
-                        상승 잠재력 (Bull Case)
+                        상승 잠재력
                     </h4>
                     <p className="text-zinc-400 text-sm leading-relaxed">
                         {bullCase}
                     </p>
                 </div>
 
-                <div className="md:col-span-6 bg-[#09090b] rounded-2xl border border-blue-900/30 p-6 relative overflow-hidden group">
+                <div className="md:col-span-6 bg-[#0B0B0D]/50 rounded-3xl border border-toss-blue/20 p-6 relative overflow-hidden group hover:border-toss-blue/40 transition-colors">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-toss-blue to-transparent opacity-50"></div>
                     <h4 className="text-toss-blue font-bold mb-3 flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-toss-blue"></span>
-                        하락 리스크 (Bear Case)
+                        하락 리스크
                     </h4>
                     <p className="text-zinc-400 text-sm leading-relaxed">
                         {bearCase}

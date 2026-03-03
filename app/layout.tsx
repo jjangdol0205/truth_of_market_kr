@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Noto_Sans_KR } from "next/font/google"; // Changed font
 import "./globals.css";
 import TopNav from "./components/TopNav";
 import DisableCopy from "@/components/DisableCopy";
 import Script from "next/script";
-
-const notoSansKR = Noto_Sans_KR({ subsets: ["latin"], weight: ["400", "500", "700", "900"] }); // Initialize font
 
 export const metadata: Metadata = {
   title: "Truth of Market | 투자의 진실",
@@ -22,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark">
       <GoogleTagManager gtmId="GTM-W9538SHJ" />
-      <body className={`${notoSansKR.className} bg-toss-bg text-zinc-100 antialiased tracking-tight`}>
+      <body className={`bg-toss-bg text-zinc-100 antialiased tracking-tight`}>
         <DisableCopy />
         <Script
           async

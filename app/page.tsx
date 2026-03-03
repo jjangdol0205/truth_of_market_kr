@@ -24,10 +24,10 @@ export default async function Home() {
   }
 
   // Determine Unique Tickers from DB
-  let uniqueTickers = Array.from(new Set((reports || []).map(r => r.ticker)));
+  let uniqueTickers = Array.from(new Set((reports || []).map((r: any) => r.ticker)));
 
   // Filter out US/Crypto tickers, keep KOSPI/KOSDAQ (number-based) AND Korean name strings
-  uniqueTickers = uniqueTickers.filter(ticker => /^\d+$/.test(ticker) || ticker.includes('.KS') || ticker.includes('.KQ') || /[가-힣]/.test(ticker));
+  uniqueTickers = uniqueTickers.filter((ticker: any) => typeof ticker === 'string' && (/^\d+$/.test(ticker) || ticker.includes('.KS') || ticker.includes('.KQ') || /[가-힣]/.test(ticker)));
 
   // Fetch Latest Daily Market Summary
   const { data: globalSummaries } = await supabase
@@ -43,17 +43,35 @@ export default async function Home() {
   if (uniqueTickers.length > 0) {
     try {
       const fetchPromises = uniqueTickers.map(async (ticker) => {
-        // Handle crypto edge-cases gracefully if needed
         let queryTicker = ticker;
-        if (/^\d+$/.test(ticker)) {
+
+        // If the ticker is a Korean Name, resolve it to Yahoo symbol
+        if (/[가-힣]/.test(ticker)) {
+          try {
+            const searchRes = await fetch('https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker), {
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+              next: { revalidate: 86400 } // Cache heavily
+            });
+            if (searchRes.ok) {
+              const searchData = await searchRes.json();
+              const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
+              if (koStock) {
+                queryTicker = koStock.symbol;
+              }
+            }
+          } catch (e) {
+            console.error(`Failed to resolve name ${ticker}`, e);
+          }
+        } else if (/^\d+$/.test(ticker)) {
           queryTicker = `${ticker}.KS`;
         } else if (ticker === "LNK") {
           queryTicker = "LINK-USD";
         }
+
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${queryTicker}?interval=1d&range=1d`;
 
         try {
-          const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, next: { revalidate: 60 } });
+          const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, next: { revalidate: 60 } } as any);
           const data = await res.json();
           const meta = data?.chart?.result?.[0]?.meta;
           if (meta) {
@@ -75,20 +93,20 @@ export default async function Home() {
   }
 
   // Merge the fetched data with our dynamic watchlist details
-  const trendingStocks = uniqueTickers.map(ticker => {
+  const trendingStocks = uniqueTickers.map((ticker: any) => {
     const liveData = quotesData.find(q => q.symbol === ticker);
     return {
       ticker: ticker,
-      name: getKoreanName(ticker), // Fallback name to Ticker string mapped by KRX dictionary
+      name: ticker, // Force name to just be the ticker itself since the ticker IS the Korean company name
       price: liveData?.price || 0,
       changePercent: liveData?.changePercent || 0
     };
   });
 
-  // Sort exactly to put 005930 first
+  // Sort exactly to put 삼성전자 first
   trendingStocks.sort((a, b) => {
-    if (a.ticker === '005930') return -1;
-    if (b.ticker === '005930') return 1;
+    if (a.ticker === '005930' || a.ticker === '삼성전자') return -1;
+    if (b.ticker === '005930' || b.ticker === '삼성전자') return 1;
     return 0;
   });
 
@@ -133,7 +151,7 @@ export default async function Home() {
                 name={stock.name}
                 price={stock.price}
                 changePercent={stock.changePercent}
-                isFreeSample={stock.ticker === '005930'}
+                isFreeSample={stock.ticker === '005930' || stock.ticker === '삼성전자'}
               />
             ))}
           </div>
@@ -149,8 +167,6 @@ export default async function Home() {
 
       {/* Product Education */}
       <HowItWorks />
-
-
 
       {/* Lead Magnet Section */}
       <section className="mb-20">

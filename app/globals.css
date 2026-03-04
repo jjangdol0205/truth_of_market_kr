@@ -3,11 +3,57 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-toss-bg: #0B0B0D; /* Slightly richer dark gray for premium feel */
-  --color-toss-card: #18181A; /* Adjusted for better contrast with soft bg */
-  --color-toss-red: #FA0050; /* A slightly more vibrant, aggressive neon red */
-  --color-toss-blue: #0077FF; /* True Toss bright blue */
-  --color-toss-border: rgba(255, 255, 255, 0.08); /* Sophisticated thin border */
+  --color-toss-bg: #030303;
+  /* Deepest black for true OLED feel */
+  --color-toss-bg-soft: #0E0E10;
+  /* Subtle contrast */
+  --color-toss-card: #18181A;
+  /* Adjusted for better contrast with soft bg */
+  --color-toss-red: #FA0050;
+  /* A slightly more vibrant, aggressive neon red */
+  --color-toss-green: #00E676;
+  /* Vivid neon green for positive gains */
+  --color-toss-blue: #0077FF;
+  /* True Toss bright blue */
+  --color-toss-border: rgba(255, 255, 255, 0.08);
+  /* Sophisticated thin border */
+
+  /* Animations */
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-blob: blob 7s infinite;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 @layer base {

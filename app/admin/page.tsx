@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Search, Upload, AlertTriangle, Loader2, Trash2, Database, ShieldAlert, Folder, FolderOpen, ChevronRight, FileText, TrendingUp, Calendar, Users, Star, UserCircle, BadgeCheck, MessageSquare, CheckCircle } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { analyzeTicker } from "../actions";
+import Link from "next/link";
+import { analyzeTicker, generateDailyBriefingAdmin } from "../actions";
 import TerminalLoader from "../components/TerminalLoader";
 import { createClient } from "../../utils/supabase/client";
+import { getTickerFromName } from "../../utils/krx";
 
 export default function AdminPage() {
     const router = useRouter();
@@ -14,7 +15,7 @@ export default function AdminPage() {
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     const [ticker, setTicker] = useState("");
-    const [reportType, setReportType] = useState<"research" | "earnings">("research");
+    const [reportType, setReportType] = useState<"research" | "earnings" | "daily_briefing">("research");
     const [quarter, setQuarter] = useState("Q4 2025");
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState("");
@@ -32,6 +33,10 @@ export default function AdminPage() {
     const [companyRequests, setCompanyRequests] = useState<any[]>([]);
     const [fetchingRequests, setFetchingRequests] = useState(true);
 
+    // For Daily Market Briefings
+    const [briefings, setBriefings] = useState<any[]>([]);
+    const [fetchingBriefings, setFetchingBriefings] = useState(true);
+
     const toggleFolder = (t: string) => {
         setOpenFolders(prev => ({ ...prev, [t]: !prev[t] }));
     };
@@ -47,6 +52,20 @@ export default function AdminPage() {
             setReports(data);
         }
         setFetchingReports(false);
+    };
+
+    const fetchBriefings = async () => {
+        setFetchingBriefings(true);
+        try {
+            const { data: briefData } = await supabase
+                .from('market_summaries')
+                .select('id, date, created_at, content')
+                .order('date', { ascending: false });
+            if (briefData) setBriefings(briefData);
+        } catch (e) {
+            console.error("Failed to fetch briefings", e)
+        }
+        setFetchingBriefings(false);
     };
 
     useEffect(() => {
@@ -82,6 +101,10 @@ export default function AdminPage() {
                     console.error("Failed to fetch company requests", e);
                 }
                 setFetchingRequests(false);
+
+                // Fetch Daily Briefings
+                fetchBriefings();
+
             } else {
                 setIsAuthorized(false);
                 setTimeout(() => {
@@ -145,24 +168,61 @@ export default function AdminPage() {
         }
     };
 
+    const handleDeleteBriefing = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this Daily Market Briefing?")) return;
+
+        const { error } = await supabase
+            .from('market_summaries')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            setBriefings(prev => prev.filter(b => b.id !== id));
+        } else {
+            console.error("Failed to delete briefing", error);
+            alert("삭제 실패: 권한 문제일 수 있습니다.");
+        }
+    };
+
+
     const handleAnalyze = async () => {
-        if (!ticker) return;
+        if (reportType !== "daily_briefing" && !ticker) return;
         if (reportType === "earnings" && !quarter) {
             alert("Please enter a specific quarter (e.g. Q4 2025) for earnings reports.");
             return;
+        }
+
+        let validTicker = ticker;
+        if (reportType !== "daily_briefing") {
+            const numericTicker = getTickerFromName(ticker);
+            if (!numericTicker) {
+                alert(`Invalid Company Name or Ticker: "${ticker}". Please enter a valid Korean company name or its 6-digit numeric ticker.`);
+                return;
+            }
+            validTicker = numericTicker;
         }
 
         setLoading(true);
         setResult(""); // Reset result
 
         try {
-            const aiResponse = await analyzeTicker(ticker, reportType, quarter);
+            let aiResponse;
+            if (reportType === "daily_briefing") {
+                aiResponse = await generateDailyBriefingAdmin();
+            } else {
+                aiResponse = await analyzeTicker(ticker, validTicker, reportType, quarter);
+            }
 
             if (aiResponse.startsWith("Error:")) {
                 setResult(aiResponse);
             } else {
                 setResult(aiResponse + "\n\n[System] Saved to DB ✅");
-                fetchReports(); // Refresh the list after successful creation
+                if (reportType === "daily_briefing") {
+                    // Update Briefings list instead
+                    fetchBriefings();
+                } else {
+                    fetchReports(); // Refresh the list after successful creation
+                }
             }
         } catch (e) {
             setResult("Error occurred.");
@@ -187,7 +247,7 @@ export default function AdminPage() {
                 </h2>
 
                 {/* Report Type Toggle */}
-                <div className="flex bg-toss-card rounded-2xl p-1 border border-toss-border w-fit">
+                <div className="flex bg-toss-card rounded-2xl p-1 border border-toss-border w-fit flex-wrap gap-2">
                     <button
                         onClick={() => setReportType("research")}
                         className={`px-6 py-2 rounded-md text-sm font-bold uppercase tracking-tight transition-all ${reportType === "research" ? "bg-[#00FF41] text-black" : "text-zinc-500 hover:text-white"}`}
@@ -200,17 +260,29 @@ export default function AdminPage() {
                     >
                         Earnings & Guidance
                     </button>
+                    <button
+                        onClick={() => setReportType("daily_briefing")}
+                        className={`px-6 py-2 rounded-md text-sm font-bold uppercase tracking-tight transition-all ${reportType === "daily_briefing" ? "bg-purple-500 text-white" : "text-zinc-500 hover:text-white"}`}
+                    >
+                        Daily Market Briefing
+                    </button>
                 </div>
 
                 <div className="flex gap-4 flex-wrap md:flex-nowrap">
-                    <input
-                        type="text"
-                        placeholder="Enter Ticker (e.g. 005930, 000660)"
-                        className="flex-1 min-w-[200px] w-full bg-toss-card border border-toss-border p-4 rounded-2xl text-white focus:border-emerald-500 outline-none  uppercase transition-all"
-                        value={ticker}
-                        onChange={(e) => setTicker(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                    />
+                    {reportType !== "daily_briefing" ? (
+                        <input
+                            type="text"
+                            placeholder="Enter Company Name (e.g. 삼성전자) or Ticker"
+                            className="flex-1 min-w-[200px] w-full bg-toss-card border border-toss-border p-4 rounded-2xl text-white focus:border-emerald-500 outline-none transition-all"
+                            value={ticker}
+                            onChange={(e) => setTicker(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                        />
+                    ) : (
+                        <div className="flex-1 min-w-[200px] w-full bg-toss-card border border-toss-border p-4 rounded-2xl text-zinc-500 italic">
+                            Ticker input disabled for Daily Briefing...
+                        </div>
+                    )}
 
                     {/* Conditional Quarter Dropdown */}
                     {reportType === "earnings" && (
@@ -232,7 +304,10 @@ export default function AdminPage() {
                     <button
                         onClick={handleAnalyze}
                         disabled={loading}
-                        className={`w-full md:w-auto text-black font-bold px-8 py-4 rounded-2xl disabled:opacity-50 flex items-center justify-center transition-all hover:scale-[1.02] active:scale-95 whitespace-nowrap ${reportType === "research" ? "bg-[#00FF41] hover:bg-green-400" : "bg-amber-400 hover:bg-amber-300"}`}
+                        className={`w-full md:w-auto text-black font-bold px-8 py-4 rounded-2xl disabled:opacity-50 flex items-center justify-center transition-all hover:scale-[1.02] active:scale-95 whitespace-nowrap ${reportType === "research" ? "bg-[#00FF41] hover:bg-green-400" :
+                            reportType === "earnings" ? "bg-amber-400 hover:bg-amber-300" :
+                                "bg-purple-500 hover:bg-purple-400 text-white"
+                            }`}
                     >
                         {loading ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : <Search className="w-5 h-5 mr-2" />}
                         {loading ? "PROCESSING..." : "GENERATE"}
@@ -416,6 +491,58 @@ export default function AdminPage() {
                                     );
                                 });
                             })()}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Daily Market Briefings Database */}
+            <div className="bg-toss-card border border-toss-border rounded-2xl overflow-hidden shadow-2xl mb-12">
+                <div className="p-6 border-b border-toss-border flex justify-between items-center bg-[#151515]">
+                    <h2 className="text-xl font-bold flex items-center text-white">
+                        <FileText className="w-5 h-5 mr-3 text-purple-500" />
+                        Daily Market Briefings
+                    </h2>
+                    <span className="text-zinc-500 text-sm">{briefings.length} Briefings</span>
+                </div>
+
+                <div className="bg-[#09090b]">
+                    {fetchingBriefings ? (
+                        <div className="p-12 text-center text-zinc-500">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" />
+                            Loading briefings...
+                        </div>
+                    ) : briefings.length === 0 ? (
+                        <div className="p-12 text-center text-zinc-500">
+                            <CheckCircle className="w-10 h-10 mx-auto mb-4 opacity-50" />
+                            No daily briefings found.
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-[#18181b] border-b border-toss-border">
+                                    <tr>
+                                        <th className="px-6 py-4 text-zinc-500 uppercase tracking-tight text-xs font-bold">Date</th>
+                                        <th className="px-6 py-4 text-zinc-500 uppercase tracking-tight text-xs font-bold">Content Preview</th>
+                                        <th className="px-6 py-4 text-zinc-500 uppercase tracking-tight text-xs font-bold text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-800">
+                                    {briefings.map((briefing) => (
+                                        <tr key={briefing.id} className="hover:bg-zinc-900/50 transition-colors">
+                                            <td className="px-6 py-4 text-white font-bold">{briefing.date}</td>
+                                            <td className="px-6 py-4 text-zinc-400 max-w-xs truncate">
+                                                {briefing.content?.substring(0, 50)}...
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button onClick={() => handleDeleteBriefing(briefing.id)} className="p-1.5 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors" title="Delete Briefing">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

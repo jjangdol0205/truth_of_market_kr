@@ -3,7 +3,7 @@
 import { useState } from "react";
 import InvestmentGauge from "./InvestmentGauge";
 import ReactMarkdown from 'react-markdown';
-import TradingViewWidget from "../../components/TradingViewWidget";
+import { Activity } from 'lucide-react';
 import FinancialTable from "./FinancialTable";
 
 interface ReportCardProps {
@@ -143,14 +143,26 @@ export default function ReportCard({ report, queryTicker }: ReportCardProps) {
                 {/* 2. Top Right: Analyst Summary (Span 8) */}
                 <div className="md:col-span-8 bg-[#0B0B0D]/50 rounded-3xl border border-white/5 p-6 flex flex-col justify-center transition-all hover:border-white/10">
                     <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">AI 핵심 요약</h4>
-                    <p className="text-zinc-100 text-lg font-medium leading-relaxed">
-                        {report.one_line_summary}
-                    </p>
-                </div>
-
-                {/* 3. Middle: Chart (Span 12) */}
-                <div className="md:col-span-12 h-[350px] bg-[#0B0B0D]/50 rounded-3xl border border-white/5 overflow-hidden relative">
-                    <TradingViewWidget ticker={report.ticker} queryTicker={queryTicker} />
+                    <div className="text-zinc-100 text-lg font-medium leading-relaxed">
+                        {(() => {
+                            try {
+                                const parsedLines = JSON.parse(report.one_line_summary || "[]");
+                                if (Array.isArray(parsedLines) && parsedLines.length > 0) {
+                                    return (
+                                        <ul className="space-y-4">
+                                            {parsedLines.map((line: string, i: number) => (
+                                                <li key={i} className="flex gap-3 text-zinc-300">
+                                                    <span className="text-zinc-500 mt-1.5 flex-shrink-0">•</span>
+                                                    <span className="leading-relaxed">{line}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    );
+                                }
+                            } catch { }
+                            return <p>{report.one_line_summary || "No executive summary available."}</p>;
+                        })()}
+                    </div>
                 </div>
 
                 {/* 4. Bottom Split: Bull vs Bear (Span 6 each) */}
@@ -174,6 +186,26 @@ export default function ReportCard({ report, queryTicker }: ReportCardProps) {
                     <p className="text-zinc-400 text-sm leading-relaxed">
                         {bearCase}
                     </p>
+                </div>
+
+                <div className="md:col-span-12 mt-4 flex justify-center">
+                    <a
+                        href={`https://kr.tradingview.com/chart/?symbol=KRX:${queryTicker ? queryTicker.replace('.KS', '') : report.ticker.replace('.KS', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full md:w-auto bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl flex flex-col md:flex-row items-center justify-center gap-3 group"
+                    >
+                        <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 3H3C1.895 3 1 3.895 1 5V19C1 20.105 1.895 21 3 21H21C22.105 21 23 20.105 23 19V5C23 3.895 22.105 3 21 3ZM21 19H3V5H21V19Z" fill="#5D6A7E" />
+                                <path d="M15 15L17 11V15H15Z" fill="#2962FF" />
+                                <path d="M12 15L14 10.5V15H12Z" fill="#2962FF" />
+                                <path d="M9 15L11 9V15H9Z" fill="#2962FF" />
+                                <path d="M6 15L8 12V15H6Z" fill="#2962FF" />
+                            </svg>
+                            <span>TradingView 차트 보기</span>
+                        </div>
+                    </a>
                 </div>
 
                 {/* 5. Financials (Span 12) */}

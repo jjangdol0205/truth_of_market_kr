@@ -5,7 +5,7 @@ import TradingViewWidget from "../../../components/TradingViewWidget";
 import HubTabs from "../../components/HubTabs";
 import ReportCard from "../../components/ReportCard";
 import CompanyLogo from "../../../components/CompanyLogo";
-import { getKoreanName } from "../../../utils/krx";
+import { getKoreanName, getTickerFromName, resolveYahooTicker } from "../../../utils/krx";
 
 // Ensure dynamic fetching so pricing/reports are fresh
 export const revalidate = 0;
@@ -37,24 +37,30 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
     let analystCount = 0;
 
     let queryTicker = ticker;
+    const numericTicker = getTickerFromName(ticker);
+
     if (/[가-힣]/.test(ticker)) {
-        try {
-            const searchRes = await fetch('https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker), {
-                headers: { 'User-Agent': 'Mozilla/5.0' },
-                next: { revalidate: 86400 } // Cache heavily
-            });
-            if (searchRes.ok) {
-                const searchData = await searchRes.json();
-                const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
-                if (koStock) {
-                    queryTicker = koStock.symbol;
+        if (numericTicker) {
+            queryTicker = await resolveYahooTicker(numericTicker);
+        } else {
+            try {
+                const searchRes = await fetch('https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker), {
+                    headers: { 'User-Agent': 'Mozilla/5.0' },
+                    next: { revalidate: 86400 } // Cache heavily
+                });
+                if (searchRes.ok) {
+                    const searchData = await searchRes.json();
+                    const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
+                    if (koStock) {
+                        queryTicker = koStock.symbol;
+                    }
                 }
+            } catch (e) {
+                console.error(`Failed to resolve name ${ticker}`, e);
             }
-        } catch (e) {
-            console.error(`Failed to resolve name ${ticker}`, e);
         }
     } else if (/^\d+$/.test(ticker)) {
-        queryTicker = `${ticker}.KS`;
+        queryTicker = await resolveYahooTicker(ticker);
     } else if (ticker === "LNK") {
         queryTicker = "LINK-USD";
     }
@@ -119,7 +125,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                         />
                         <div>
                             <h1 className="text-5xl font-black tracking-tighter text-white mb-1">
-                                {ticker}
+                                {getKoreanName(ticker)}
                             </h1>
                             <p className="text-indigo-500 flex items-center  text-xs font-bold tracking-tight uppercase mb-1">
                                 <Activity className="w-3 h-3 mr-1" /> 인증된 기업 허브
@@ -177,14 +183,29 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                 </div>
             ) : (
                 /* Securely Bound TradingView Widget Backup */
-                <section className="mt-8 w-full h-[450px] rounded-2xl overflow-hidden border-none bg-toss-bg shadow-sm relative z-10">
-                    <div className="absolute top-4 left-4 z-20 bg-toss-card px-3 py-1.5 rounded-full shadow-sm">
-                        <span className="text-[10px] text-toss-red  tracking-tight uppercase">실시간 기술적 분석</span>
+                <section className="mt-8 w-full p-12 rounded-2xl overflow-hidden border border-[#27272a] bg-[#18181b] shadow-xl relative z-10 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-6 border border-zinc-800 shadow-inner">
+                        <Activity className="w-8 h-8 text-toss-blue" />
                     </div>
-                    {/* Render Widget */}
-                    <div className="w-full h-full relative z-10">
-                        <TradingViewWidget ticker={ticker} queryTicker={queryTicker} />
-                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">실시간 차트 확인하기</h3>
+                    <p className="text-zinc-400 mb-8 max-w-sm mx-auto text-sm leading-relaxed">
+                        트레이딩뷰에서 <strong className="text-white">{getKoreanName(ticker)}</strong>의 실시간 가격 움직임과 보조 지표를 확인하세요.
+                    </p>
+                    <a
+                        href={`https://kr.tradingview.com/chart/?symbol=KRX:${numericTicker || queryTicker.replace('.KS', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl flex items-center gap-3 group"
+                    >
+                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 3H3C1.895 3 1 3.895 1 5V19C1 20.105 1.895 21 3 21H21C22.105 21 23 20.105 23 19V5C23 3.895 22.105 3 21 3ZM21 19H3V5H21V19Z" fill="#5D6A7E" />
+                            <path d="M15 15L17 11V15H15Z" fill="#2962FF" />
+                            <path d="M12 15L14 10.5V15H12Z" fill="#2962FF" />
+                            <path d="M9 15L11 9V15H9Z" fill="#2962FF" />
+                            <path d="M6 15L8 12V15H6Z" fill="#2962FF" />
+                        </svg>
+                        TradingView 차트 보기
+                    </a>
                 </section>
             )}
 

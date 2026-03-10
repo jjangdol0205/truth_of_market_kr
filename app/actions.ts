@@ -5,8 +5,57 @@ import { supabase } from "./lib/supabase";
 
 import { createClient } from "@/utils/supabase/server";
 import { fetchDartFinancials } from "@/utils/dart";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateText } from "ai";
+import { resolveYahooTicker, getTickerFromName } from "@/utils/krx";
 
-export async function analyzeTicker(tickerInput: string, reportType: "research" | "earnings" = "research", quarter: string = "") {
+export async function resolveYahooTickerServer(ticker: string) {
+    return resolveYahooTicker(ticker);
+}
+
+export async function fetchLivePricesServer(tickers: string[]) {
+    // 1. Resolve all tickers to Yahoo Symbols concurrently
+    const resolvedPromises = tickers.map(async (ticker) => {
+        let queryTicker = ticker;
+        const numericTicker = getTickerFromName(ticker);
+
+        if (numericTicker) {
+            queryTicker = await resolveYahooTicker(numericTicker);
+        } else if (/^\d+$/.test(ticker)) {
+            queryTicker = await resolveYahooTicker(ticker);
+        } else if (ticker === "LNK") {
+            queryTicker = "LINK-USD";
+        }
+        return { original: ticker, queryTicker };
+    });
+
+    const resolvedTickers = await Promise.all(resolvedPromises);
+
+    // 2. Fetch prices concurrently
+    const pricePromises = resolvedTickers.map(async ({ original, queryTicker }) => {
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${queryTicker}?interval=1d&range=1d`;
+        try {
+            const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                const meta = data?.chart?.result?.[0]?.meta;
+                if (meta) {
+                    const price = meta.regularMarketPrice;
+                    const previousClose = meta.chartPreviousClose;
+                    const changePercent = ((price - previousClose) / previousClose) * 100;
+                    return { symbol: original, price, changePercent };
+                }
+            }
+        } catch (e) {
+            console.error(`Failed to fetch live price for ${queryTicker}`, e);
+        }
+        return { symbol: original, price: 0, changePercent: 0 };
+    });
+
+    return await Promise.all(pricePromises);
+}
+
+export async function analyzeTicker(tickerInput: string, numericTicker: string, reportType: "research" | "earnings" = "research", quarter: string = "") {
     // ENFORCE ADMIN SECURITY ON THE SERVER ACTION
     const supabaseServer = await createClient();
     const { data: { session } } = await supabaseServer.auth.getSession();
@@ -28,7 +77,7 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
     if (!apiKey) return "Error: API Key not found.";
 
     // 1.5 DART 전자공시 데이터 공식 발췌 (오피셜 데이터 주입)
-    const dartData = await fetchDartFinancials(ticker);
+    const dartData = await fetchDartFinancials(numericTicker);
     const dartContext = dartData ? `\n\n================================\n**CRITICAL DART FINANCIAL DATA (OFFICIAL)**\n${dartData}\n================================\n\n` : "";
 
     // 2. 제미나이 연결
@@ -61,7 +110,8 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
     - DO NOT use old data from 2024. Pull the most recent earnings, the most recent product releases, and the absolute latest market conditions.
     ${dartContext}
     **STRICT SOURCE REQUIREMENT**:
-    - Use \`Google Search\` to find the absolute latest real-time data and news for ${tickerInput} (${ticker}) up to ${today}.
+    - Use \`Google Search\` to find the absolute latest real-time data and news for Company: ${tickerInput} (Ticker: ${numericTicker}) up to ${today}.
+    - **CRITICAL**: The target company is exactly "${tickerInput}". Do not confuse it with any other company.
     - **CRITICAL FOR KOREAN STOCKS**: If this is a Korean company, you MUST search and extract data from the following authoritative Korean sources:
       1. **DART (전자공시시스템)**: Find the most recent quarterly/annual business reports (사업보고서, 분기보고서).
       2. **Naver Finance & News (네이버 증권/뉴스)**: Extract the latest headlines, institutional sentiment, and peer comparisons.
@@ -239,7 +289,7 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
             const { error } = await supabase
                 .from('reports')
                 .insert({
-                    ticker: ticker.toUpperCase(),
+                    ticker: tickerInput.toUpperCase(), // Save the company name intentionally
                     risk_score: analysis.investment_score?.total || 50,
                     verdict: analysis.verdict || "HOLD",
                     one_line_summary: analysis.executive_summary,
@@ -273,4 +323,109 @@ export async function analyzeTicker(tickerInput: string, reportType: "research" 
 
     // Return detailed error log to user
     return `Error: All models failed to analyze.\n\n[Details]\n${errorLog.join("\n")}`;
+}
+
+export async function generateDailyBriefingAdmin() {
+    const supabaseServer = await createClient();
+    const { data: { session } } = await supabaseServer.auth.getSession();
+
+    if (session?.user?.email !== "beable9489@gmail.com") {
+        return "Error: Unauthorized. Only the administrator can generate briefings.";
+    }
+
+    try {
+        const indices = ['^KS11', '^KQ11', '^GSPC'];
+        let marketDataStr = "";
+
+        const fetchPromises = indices.map(async (ticker) => {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+            try {
+                const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, cache: 'no-store' });
+                const data = await res.json();
+                const meta = data?.chart?.result?.[0]?.meta;
+                if (meta) {
+                    const price = meta.regularMarketPrice;
+                    const prevClose = meta.chartPreviousClose;
+                    const changePercent = ((price - prevClose) / prevClose) * 100;
+                    const name = ticker === '^KS11' ? '코스피 (KOSPI)' : ticker === '^KQ11' ? '코스닥 (KOSDAQ)' : 'S&P 500';
+                    marketDataStr += `${name}: ${price.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)\n`;
+                }
+            } catch (e) {
+                console.error(`Failed to fetch index ${ticker}`, e);
+            }
+        });
+
+        await Promise.all(fetchPromises);
+
+        if (!marketDataStr) {
+            marketDataStr = "Market data unavailable today.";
+        }
+
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        const prompt = `
+You are a highly analytical, objective, and professional Wall Street algorithmic analyst.
+Your job is to write a short, punchy, 3-paragraph "Daily Market Briefing".
+This is for the end of the US and Korean trading day on ${dateStr}.
+
+Here is the raw closing data for the major indices:
+${marketDataStr}
+
+Instructions:
+1. Write exactly 3 sections (can use bullet points).
+2. Section 1: 요약 및 주요 지수 (Executive Summary & Indices). Summarize if the market went up or down, the overall sentiment, AND explicitly list the 1-day percentage change for KOSPI, KOSDAQ, and S&P 500 using the raw data provided above.
+3. Section 2: 주요 시장 동인 (Top 3 Market Drivers). Identify and list the 3 most important news headlines, macro events, or sector shifts that drove the **Korean market (코스피/코스닥)** today. Use bullet points for these 3 items. Focus primarily on domestic issues, foreign/institutional flows, and how global macro impacted Korea.
+4. Section 3: AI 투자 전망 (The AI Verdict). Give a 1-sentence forward-looking thought or technical warning regarding the Korean market.
+5. Format the text nicely in Markdown. Use bolding for key terms. DO NOT use emojis. Write ENTIRELY in professional KOREAN (한국어). Do NOT write in English.
+
+Title Requirement:
+The very first line of your response MUST BE the title formatted strictly like this:
+TITLE: [전문적인 한국어 제목]
+Content begins on the next line.
+`;
+
+        const google = createGoogleGenerativeAI({
+            apiKey: process.env.GEMINI_API_KEY,
+        });
+        const model = google("gemini-2.5-flash");
+
+        const { text } = await generateText({
+            model: model,
+            prompt: prompt,
+            temperature: 0.7,
+        });
+
+        let title = `마켓 브리핑: ${dateStr}`;
+        let content = text;
+
+        const titleMatch = text.match(/^(?:\*\*)?TITLE\s*:\s*(?:\*\*)?(.*)$/im);
+        if (titleMatch) {
+            title = titleMatch[1].replace(/\*\*/g, '').trim();
+            content = text.replace(titleMatch[0], '').trim();
+        }
+
+        const { error } = await supabase
+            .from('market_summaries')
+            .upsert(
+                {
+                    date: dateStr,
+                    title: title,
+                    content: content
+                },
+                { onConflict: 'date' }
+            );
+
+        if (error) {
+            return `Error: Failed to save summary to database - ${error.message}`;
+        }
+
+        return JSON.stringify({
+            success: true,
+            title: title,
+            content: content
+        });
+
+    } catch (error: any) {
+        return `Error: Internal server error - ${error.message}`;
+    }
 }

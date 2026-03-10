@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
 import ReportCard from "./components/ReportCard";
 import StockCard from "../components/StockCard";
-import LeadMagnet from "./components/LeadMagnet";
 import DailyBriefing from "../components/DailyBriefing";
 import HeroSearch from "../components/HeroSearch";
 import SocialProof from "../components/SocialProof";
 import HowItWorks from "../components/HowItWorks";
-import { getKoreanName } from "../utils/krx";
+import { getKoreanName, getTickerFromName } from "../utils/krx";
+import { fetchLivePricesServer } from "./actions";
 
 
 export default function Home() {
@@ -52,51 +52,9 @@ export default function Home() {
       let quotesData: any[] = [];
       if (uniqueTickers.length > 0) {
         try {
-          const fetchPromises = uniqueTickers.map(async (ticker) => {
-            let queryTicker = ticker;
-
-            // If the ticker is a Korean Name, resolve it to Yahoo symbol
-            if (/[가-힣]/.test(ticker)) {
-              try {
-                const searchRes = await fetch('https://query2.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(ticker), {
-                  headers: { 'User-Agent': 'Mozilla/5.0' },
-                  next: { revalidate: 86400 } // Cache heavily
-                });
-                if (searchRes.ok) {
-                  const searchData = await searchRes.json();
-                  const koStock = searchData.quotes?.find((q: any) => q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ'));
-                  if (koStock) {
-                    queryTicker = koStock.symbol;
-                  }
-                }
-              } catch (e) {
-                console.error(`Failed to resolve name ${ticker}`, e);
-              }
-            } else if (/^\d+$/.test(ticker)) {
-              queryTicker = `${ticker}.KS`;
-            } else if (ticker === "LNK") {
-              queryTicker = "LINK-USD";
-            }
-
-            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${queryTicker}?interval=1d&range=1d`;
-
-            try {
-              const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, next: { revalidate: 60 } } as any);
-              const data = await res.json();
-              const meta = data?.chart?.result?.[0]?.meta;
-              if (meta) {
-                const price = meta.regularMarketPrice;
-                const previousClose = meta.chartPreviousClose;
-                const changePercent = ((price - previousClose) / previousClose) * 100;
-                return { symbol: ticker, price, changePercent };
-              }
-            } catch (e) {
-              console.error(`Failed to fetch ${ticker}`, e);
-            }
-            return { symbol: ticker, price: 0, changePercent: 0 };
-          });
-
-          quotesData = await Promise.all(fetchPromises);
+          // Offload entire Yahoo Finance resolution and fetching to the Server Action 
+          // to bypass Browser CORS
+          quotesData = await fetchLivePricesServer(uniqueTickers);
         } catch (err) {
           console.error("Error fetching live quotes:", err);
         }
@@ -238,11 +196,6 @@ export default function Home() {
 
       {/* Product Education */}
       <HowItWorks />
-
-      {/* Lead Magnet Section */}
-      <section className="mb-20">
-        <LeadMagnet />
-      </section>
 
     </div>
   );

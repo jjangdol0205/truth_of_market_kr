@@ -5,11 +5,10 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import ScoreGauge from "../../../components/ScoreGauge";
-import TradingViewWidget from "../../../components/TradingViewWidget";
 import { createClient } from "../../../utils/supabase/server";
 import ShareButtons from "../../components/ShareButtons";
-import LeadMagnet from "../../components/LeadMagnet";
 import CompanyLogo from "../../../components/CompanyLogo";
+import { getTickerFromName } from "../../../utils/krx";
 
 // Force dynamic rendering since we are fetching data that changes
 export const dynamic = "force-dynamic";
@@ -103,9 +102,26 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                     <span className="w-2 h-2 bg-toss-red rounded-full mr-2 animate-pulse"></span>
                     핵심 요약 (EXECUTIVE SUMMARY)
                 </h3>
-                <p className="text-lg text-gray-300 leading-relaxed font-medium">
-                    {report.one_line_summary || "No executive summary available."}
-                </p>
+                <div className="text-lg text-gray-300 leading-relaxed font-medium">
+                    {(() => {
+                        try {
+                            const parsedLines = JSON.parse(report.one_line_summary || "[]");
+                            if (Array.isArray(parsedLines) && parsedLines.length > 0) {
+                                return (
+                                    <ul className="space-y-4">
+                                        {parsedLines.map((line: string, i: number) => (
+                                            <li key={i} className="flex gap-3 text-zinc-300">
+                                                <span className="text-zinc-500 mt-1.5 flex-shrink-0">•</span>
+                                                <span className="leading-relaxed">{line}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                );
+                            }
+                        } catch { }
+                        return <p>{report.one_line_summary || "No executive summary available."}</p>;
+                    })()}
+                </div>
             </section>
 
             {/* Bull vs Bear Split */}
@@ -145,14 +161,23 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 </div>
             </section>
 
-            {/* Always Visible: TradingView Chart */}
-            <section className="w-full h-[500px] rounded-3xl overflow-hidden bg-toss-card relative pt-16 pb-4 px-4">
-                <div className="absolute top-4 left-4 z-10 bg-toss-bg px-4 py-1.5 rounded-full">
-                    <span className="text-xs text-toss-red font-bold">기술적 분석 (TECHNICAL ANALYSIS)</span>
-                </div>
-                <div className="w-full h-full rounded-2xl overflow-hidden">
-                    <TradingViewWidget ticker={report.ticker} />
-                </div>
+            {/* Always Visible: TradingView Chart Link */}
+            <section className="w-full flex justify-center py-8">
+                <a
+                    href={`https://kr.tradingview.com/chart/?symbol=KRX:${getTickerFromName(report.ticker) || report.ticker.replace('.KS', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full max-w-sm bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 text-white px-8 py-5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+                >
+                    <svg className="w-6 h-6 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 3H3C1.895 3 1 3.895 1 5V19C1 20.105 1.895 21 3 21H21C22.105 21 23 20.105 23 19V5C23 3.895 22.105 3 21 3ZM21 19H3V5H21V19Z" fill="#5D6A7E" />
+                        <path d="M15 15L17 11V15H15Z" fill="#2962FF" />
+                        <path d="M12 15L14 10.5V15H12Z" fill="#2962FF" />
+                        <path d="M9 15L11 9V15H9Z" fill="#2962FF" />
+                        <path d="M6 15L8 12V15H6Z" fill="#2962FF" />
+                    </svg>
+                    <span className="text-lg">TradingView 차트 보기</span>
+                </a>
             </section>
 
             {/* Report Content */}
@@ -170,10 +195,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 </div>
             </section>
 
-            {/* Newsletter Subscription (Retention Loop) */}
-            <section className="mt-20">
-                <LeadMagnet />
-            </section>
         </div>
     );
 }

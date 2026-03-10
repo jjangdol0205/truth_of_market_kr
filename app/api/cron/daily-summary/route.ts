@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { supabase } from "../../../lib/supabase";
 
 // We import the AI SDK for Gemini
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
+
+const google = createGoogleGenerativeAI({
+    apiKey: process.env.GEMINI_API_KEY,
+});
 
 // Vercel Cron will hit this URL automatically
 export async function GET(req: Request) {
@@ -75,7 +79,7 @@ TITLE: [전문적인 한국어 제목]
 Content begins on the next line.
 `;
 
-        const model = google("gemini-1.5-pro");
+        const model = google("gemini-2.5-flash");
 
         const { text } = await generateText({
             model: model,
@@ -87,10 +91,10 @@ Content begins on the next line.
         let title = `마켓 브리핑: ${dateStr}`;
         let content = text;
 
-        if (text.startsWith("TITLE:")) {
-            const lines = text.split('\n');
-            title = lines[0].replace("TITLE:", "").trim();
-            content = lines.slice(1).join('\n').trim();
+        const titleMatch = text.match(/^(?:\*\*)?TITLE\s*:\s*(?:\*\*)?(.*)$/im);
+        if (titleMatch) {
+            title = titleMatch[1].replace(/\*\*/g, '').trim();
+            content = text.replace(titleMatch[0], '').trim();
         }
 
         // 5. Save to Supabase
@@ -114,8 +118,8 @@ Content begins on the next line.
         console.log(`[Cron] Successfully generated and saved summary for ${dateStr}`);
         return NextResponse.json({ success: true, date: dateStr, title });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('[Cron] Fatal error generating daily summary:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal server error', details: error.message, stack: error.stack }, { status: 500 });
     }
 }

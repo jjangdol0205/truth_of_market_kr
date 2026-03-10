@@ -1,7 +1,5 @@
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import { Play, Volume2, Clock } from 'lucide-react';
-
 interface DailyBriefingProps {
     summary: {
         date: string;
@@ -22,27 +20,6 @@ export default function DailyBriefing({ summary }: DailyBriefingProps) {
                 {/* Glow Effect */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-toss-green/20 rounded-full blur-[80px] group-hover:bg-toss-green/30 transition-all duration-700"></div>
 
-                {/* Audio Player Bar (Mock) */}
-                <div className="mb-8 flex flex-col md:flex-row items-center gap-4 bg-black/40 border border-white/10 rounded-2xl p-4 shadow-inner">
-                    <button className="flex-shrink-0 w-12 h-12 rounded-full bg-toss-green text-black flex items-center justify-center hover:scale-105 hover:shadow-[0_0_20px_rgba(49,209,104,0.4)] transition-all">
-                        <Play size={20} className="ml-1" fill="currentColor" />
-                    </button>
-                    <div className="flex-1 w-full space-y-2">
-                        <div className="flex justify-between text-xs text-zinc-400 font-medium">
-                            <span>오늘의 시장 요약 브리핑 듣기</span>
-                            <span className="flex items-center gap-1"><Clock size={12} /> 03:45</span>
-                        </div>
-                        {/* Mock Waveform */}
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden flex items-center gap-1 px-1">
-                            {[...Array(30)].map((_, i) => (
-                                <div key={i} className={`h-full w-1 rounded-full bg-toss-green/30 animate-pulse`} style={{ animationDelay: `${i * 0.1}s`, height: `${Math.max(20, Math.random() * 100)}%` }}></div>
-                            ))}
-                        </div>
-                    </div>
-                    <button className="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full bg-white/5 text-zinc-400 flex items-center justify-center hover:bg-white/10 transition-colors">
-                        <Volume2 size={18} />
-                    </button>
-                </div>
 
                 <h4 className="text-2xl font-extrabold text-white mb-6 tracking-tight relative z-10">
                     {summary.title}

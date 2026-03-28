@@ -13,19 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Trigger Daily Market Summary API
-        id: trigger-api
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Daily Market Summary Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
-          echo "Triggering the market summary API deployed on Vercel..."
-          
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${{ secrets.PROD_URL }}/api/cron/daily-summary" \
-               -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
-          
-          echo "API responded with status: $HTTP_STATUS"
-          
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "Error: Daily market briefing API failed with status $HTTP_STATUS"
-            exit 1
-          else
-            echo "Daily market briefing API executed successfully!"
-          fi
+          npx tsx scripts/daily_summary.ts

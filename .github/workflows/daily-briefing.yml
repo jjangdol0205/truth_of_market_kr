@@ -1,0 +1,31 @@
+name: Daily Market Briefing
+
+on:
+  schedule:
+    # Runs at 22:00 UTC (10:00 PM UTC), which is 07:00 AM KST
+    # Monday to Friday
+    - cron: '0 22 * * 1-5'
+  # Allows triggering the workflow manually from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  run-daily-briefing:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger Daily Market Summary API
+        id: trigger-api
+        run: |
+          echo "Triggering the market summary API deployed on Vercel..."
+          
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${{ secrets.PROD_URL }}/api/cron/daily-summary" \
+               -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          echo "API responded with status: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Error: Daily market briefing API failed with status $HTTP_STATUS"
+            exit 1
+          else
+            echo "Daily market briefing API executed successfully!"
+          fi

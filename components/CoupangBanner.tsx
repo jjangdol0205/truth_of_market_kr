@@ -26,9 +26,14 @@ export default function CoupangBanner() {
                             </p>
                         </div>
                     </div>
-                    <div className="hidden md:flex items-center text-xs font-bold text-rose-400 uppercase tracking-wider bg-rose-500/10 px-3 py-1.5 rounded-full border border-rose-500/20 group-hover:bg-rose-500/20 transition-colors">
+                    <a 
+                        href="https://influencers.coupang.com/s/paradisehero" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="hidden md:flex items-center text-xs font-bold text-rose-400 uppercase tracking-wider bg-rose-500/10 px-3 py-1.5 rounded-full border border-rose-500/20 group-hover:bg-rose-500/30 hover:scale-105 transition-all cursor-pointer"
+                    >
                         특가 확인하기 <ExternalLink className="w-3 h-3 ml-1.5" />
-                    </div>
+                    </a>
                 </div>
 
                 {/* The Coupang iframe */}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import TopNav from "./components/TopNav";
 import DisableCopy from "@/components/DisableCopy";
+import FloatingShopButton from "@/components/FloatingShopButton";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -36,6 +37,8 @@ export default function RootLayout({
             {children}
           </main>
 
+          <FloatingShopButton />
+          
           {/* Footer */}
           <footer className="border-t border-toss-border py-6 text-center text-xs text-zinc-500 font-medium">
             © 2026 Truth of Market. 본 정보는 투자 참고용이며 투자 결과에 대한 법적 책임을 지지 않습니다.

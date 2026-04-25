@@ -59,6 +59,14 @@ export default function TopNav() {
                     <Link href="/" className="cursor-pointer hover:text-white transition-colors hidden md:inline">분석 리포트</Link>
                     <Link href="/briefings" className="cursor-pointer hover:text-white transition-colors hidden md:inline">일일 시황</Link>
                     <Link href="/about" className="cursor-pointer hover:text-white transition-colors hidden md:inline">소개</Link>
+                    <a 
+                        href="https://influencers.coupang.com/s/paradisehero" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="cursor-pointer hover:text-toss-red transition-colors hidden md:inline flex items-center gap-1 font-bold"
+                    >
+                        🎁 투자 장비 샵
+                    </a>
 
 
 

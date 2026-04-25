@@ -9,6 +9,7 @@ import { createClient } from "../../../utils/supabase/server";
 import ShareButtons from "../../components/ShareButtons";
 import CompanyLogo from "../../../components/CompanyLogo";
 import { getTickerFromName } from "../../../utils/krx";
+import CoupangBanner from "../../../components/CoupangBanner";
 
 // Force dynamic rendering since we are fetching data that changes
 export const dynamic = "force-dynamic";
@@ -178,6 +179,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                     </svg>
                     <span className="text-lg">TradingView 차트 보기</span>
                 </a>
+            </section>
+
+            {/* Affiliate Marketing Integration */}
+            <section className="w-full flex justify-center pb-8">
+                <CoupangBanner />
             </section>
 
             {/* Report Content */}

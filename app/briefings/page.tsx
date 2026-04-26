@@ -1,6 +1,7 @@
 import { createClient } from "../../utils/supabase/server";
 import { Calendar } from "lucide-react";
 import BriefingList from "../components/BriefingList";
+import CoupangCategory from "../../components/CoupangCategory";
 
 export const revalidate = 60; // Cache the page for 60 seconds
 
@@ -21,7 +22,7 @@ export default async function BriefingsPage() {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto px-6 py-24">
-                <div className="text-center mb-16">
+                <div className="text-center mb-12">
                     <div className="inline-flex items-center justify-center space-x-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
                         <Calendar className="w-4 h-4 ml-1" />
                         <span>Daily Archive</span>
@@ -34,7 +35,10 @@ export default async function BriefingsPage() {
                     </p>
                 </div>
 
-                <div className="space-y-12">
+                {/* Affiliate Marketing Integration */}
+                <CoupangCategory />
+
+                <div className="space-y-12 mt-12">
                     {error ? (
                         <div className="p-12 text-center text-rose-500 bg-rose-500/10 rounded-2xl border border-rose-500/20">
                             브리핑 데이터를 불러오는 데 실패했습니다.

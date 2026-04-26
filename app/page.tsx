@@ -8,9 +8,9 @@ import DailyBriefing from "../components/DailyBriefing";
 import HeroSearch from "../components/HeroSearch";
 import SocialProof from "../components/SocialProof";
 import HowItWorks from "../components/HowItWorks";
+import CoupangDynamic from "../components/CoupangDynamic";
 import { getKoreanName, getTickerFromName } from "../utils/krx";
 import { fetchLivePricesServer } from "./actions";
-
 
 export default function Home() {
   const [reports, setReports] = useState<any[]>([]);
@@ -121,6 +121,8 @@ export default function Home() {
         </p>
 
         <HeroSearch />
+        
+        <CoupangDynamic />
 
         <div className="flex flex-wrap justify-center gap-4 mt-8 px-2">
           <span className="px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-semibold text-zinc-300 flex items-center shadow-lg">

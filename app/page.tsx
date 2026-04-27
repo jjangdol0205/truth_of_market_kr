@@ -136,10 +136,12 @@ export default function Home() {
       </section>
 
       {/* Daily Briefing (FREE CONTENT) */}
-      <DailyBriefing summary={dailySummary} />
+      <div id="briefings-section" className="scroll-mt-24">
+        <DailyBriefing summary={dailySummary} />
+      </div>
 
       {/* Trending Stocks Grid (New Dashboard Section) */}
-      <section className="mb-20 space-y-10">
+      <section id="reports-section" className="mb-20 space-y-10 scroll-mt-24">
 
         {/* US Stocks */}
         {trendingUS.length > 0 && (

@@ -11,8 +11,8 @@ export default function TopNav() {
                     TRUTH_OF_MARKET<span className="animate-pulse">_</span>
                 </Link>
                 <nav className="flex items-center text-sm text-gray-400 font-medium  gap-6">
-                    <Link href="/" className="cursor-pointer hover:text-white transition-colors hidden md:inline">분석 리포트</Link>
-                    <Link href="/briefings" className="cursor-pointer hover:text-white transition-colors hidden md:inline">일일 시황</Link>
+                    <Link href="/#reports-section" className="cursor-pointer hover:text-white transition-colors hidden md:inline">분석 리포트</Link>
+                    <Link href="/#briefings-section" className="cursor-pointer hover:text-white transition-colors hidden md:inline">일일 시황</Link>
                     <Link href="/about" className="cursor-pointer hover:text-white transition-colors hidden md:inline">소개</Link>
                     <a 
                         href="https://influencers.coupang.com/s/paradisehero" 

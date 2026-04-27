@@ -1,15 +1,14 @@
-name: Daily Market Briefing
+name: Auto Pilot Bot (Market Briefing & Deep Research)
 
 on:
   schedule:
-    # Runs at 22:00 UTC (10:00 PM UTC), which is 07:00 AM KST
-    # Monday to Friday
-    - cron: '0 22 * * 1-5'
+    # Runs at 10:00 UTC (19:00 KST) and 22:00 UTC (07:00 KST) Monday to Friday
+    - cron: '0 10,22 * * 1-5'
   # Allows triggering the workflow manually from GitHub UI
   workflow_dispatch:
 
 jobs:
-  run-daily-briefing:
+  run-auto-pilot:
     runs-on: ubuntu-latest
     
     steps:
@@ -25,10 +24,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Daily Market Summary Script
+      - name: Run Auto Pilot Scripts
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
           npx tsx scripts/daily_summary.ts
+          node scripts/run_batch_research.mjs

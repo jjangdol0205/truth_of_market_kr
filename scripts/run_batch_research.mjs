@@ -332,7 +332,7 @@ async function analyzeTickerLocal(tickerInput, numericTicker, reportType = "rese
 
 async function main() {
     console.log("Starting Batch Deep Research & Earning Guidance...");
-    const companies = [
+    const krCompanies = [
         { name: "삼성전자", ticker: "005930" },
         { name: "SK하이닉스", ticker: "000660" },
         { name: "엘앤케이바이오", ticker: "156100" },
@@ -342,7 +342,10 @@ async function main() {
         { name: "NAVER", ticker: "035420" },
         { name: "카카오", ticker: "035720" },
         { name: "에코프로비엠", ticker: "247540" },
-        { name: "셀트리온", ticker: "068270" },
+        { name: "셀트리온", ticker: "068270" }
+    ];
+
+    const usCompanies = [
         { name: "NVIDIA", ticker: "NVDA" },
         { name: "Apple", ticker: "AAPL" },
         { name: "Microsoft", ticker: "MSFT" },
@@ -355,7 +358,15 @@ async function main() {
         { name: "Broadcom", ticker: "AVGO" }
     ];
 
-    for (const company of companies) {
+    // Pick 1 random KR company and 1 random US company
+    const selectedKr = krCompanies[Math.floor(Math.random() * krCompanies.length)];
+    const selectedUs = usCompanies[Math.floor(Math.random() * usCompanies.length)];
+    
+    const targetCompanies = [selectedKr, selectedUs];
+
+    console.log(`Today's selected companies: [KR] ${selectedKr.name}, [US] ${selectedUs.name}`);
+
+    for (const company of targetCompanies) {
         console.log(`\n==============================================`);
         console.log(`Processing ${company.name} (${company.ticker})`);
         console.log(`==============================================\n`);

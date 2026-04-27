@@ -11,9 +11,50 @@ import CompanyLogo from "../../../components/CompanyLogo";
 import { getTickerFromName } from "../../../utils/krx";
 import CoupangSearch from "../../../components/CoupangSearch";
 import CoupangCategory from "../../../components/CoupangCategory";
+import CoupangNativeAd from "../../../components/CoupangNativeAd";
+import { Metadata, ResolvingMetadata } from "next";
 
 // Force dynamic rendering since we are fetching data that changes
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { id } = await params;
+
+  const { data: report } = await supabase
+    .from('reports')
+    .select('ticker, one_line_summary')
+    .eq('id', id)
+    .single();
+
+  if (!report) {
+    return {
+      title: 'Report Not Found | Truth of Market',
+    };
+  }
+
+  const ticker = report.ticker === 'TSLA' ? 'TESLA' : report.ticker;
+  const title = `[${ticker}] AI 심층 분석 리포트 | Truth of Market`;
+  
+  // Clean up one line summary if it's JSON
+  let desc = report.one_line_summary || "Wall street lies exposed.";
+  try {
+      const parsed = JSON.parse(desc);
+      if (Array.isArray(parsed) && parsed.length > 0) desc = parsed.join(" ");
+  } catch {}
+
+  return {
+    title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      type: 'article',
+    },
+  };
+}
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -163,8 +204,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 </div>
             </section>
 
-            {/* Affiliate Marketing Integration - Search Widget */}
-            <CoupangSearch />
+            {/* Affiliate Marketing Integration - Native Ad */}
+            <CoupangNativeAd ticker={report.ticker === 'TSLA' ? 'TESLA' : report.ticker} />
 
             {/* Always Visible: TradingView Chart Link */}
             <section className="w-full flex justify-center py-4">

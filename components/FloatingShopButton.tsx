@@ -28,7 +28,7 @@ export default function FloatingShopButton() {
             <div className="relative bg-[#050505] border border-rose-500/40 text-white shadow-2xl rounded-full p-3.5 flex items-center gap-2 transform group-hover:scale-105 transition-all duration-300 overflow-hidden">
                 <ShoppingBag className="w-5 h-5 text-rose-500 animate-pulse" />
                 <span className="font-bold whitespace-nowrap hidden sm:inline text-xs tracking-tight text-zinc-200">
-                    추천 아이템 구경하기
+                    🔥 트레이더의 데스크 셋업 엿보기
                 </span>
                 
                 {/* Shine effect */}

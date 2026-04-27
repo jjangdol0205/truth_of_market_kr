@@ -10,8 +10,8 @@ import ShareButtons from "../../components/ShareButtons";
 import CompanyLogo from "../../../components/CompanyLogo";
 import { getTickerFromName } from "../../../utils/krx";
 import CoupangSearch from "../../../components/CoupangSearch";
-import CoupangCategory from "../../../components/CoupangCategory";
 import CoupangNativeAd from "../../../components/CoupangNativeAd";
+import ScrollIntentAd from "../../../components/ScrollIntentAd";
 import { Metadata, ResolvingMetadata } from "next";
 
 // Force dynamic rendering since we are fetching data that changes
@@ -244,6 +244,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             {/* Affiliate Marketing Integration - Category Banner at bottom */}
             <CoupangCategory />
 
+            <ScrollIntentAd />
         </div>
     );
 }

@@ -35,6 +35,24 @@ export default function DailyBriefing({ summary }: DailyBriefingProps) {
                     </ReactMarkdown>
                 </div>
 
+                {/* Daily Sponsor Ad Integration */}
+                <div className="mt-8 bg-gradient-to-r from-zinc-900 to-black border border-toss-border rounded-xl p-4 relative z-10 hover:border-zinc-700 transition-colors">
+                    <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
+                        <div>
+                            <span className="text-[10px] text-emerald-500 font-bold tracking-wider mb-1 block">TODAY'S SPONSOR</span>
+                            <p className="text-sm text-zinc-300 font-medium">폭락장에서도 살아남은 <strong className="text-white">전설적인 트레이더들의 장비 모음</strong></p>
+                        </div>
+                        <a 
+                            href="https://link.coupang.com/a/ewWHT2"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap w-full sm:w-auto text-center border border-zinc-700"
+                        >
+                            특가 보러가기
+                        </a>
+                    </div>
+                </div>
+
                 <div className="mt-6 pt-4 border-t border-toss-border flex justify-between items-center text-xs  text-zinc-500 relative z-10">
                     <span className="flex items-center">
                         <span className="w-1.5 h-1.5 rounded-full bg-toss-green mr-2 animate-pulse"></span>

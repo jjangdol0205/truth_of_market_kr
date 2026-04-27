@@ -1,0 +1,46 @@
+{
+  "investment_score": {
+    "total": 87,
+    "breakdown": [
+      {
+        "category": "Valuation (vs Peers)",
+        "score": 22,
+        "max_score": 30,
+        "reason": "P/E가 업계 평균보다 높지만, 강력한 서비스 부문 마진과 예측되는 두 자릿수 EPS 성장률(Q2 FY2026 예상 +14% YoY)로 정당화됩니다."
+      },
+      {
+        "category": "Fundamental Health & FCF",
+        "score": 28,
+        "max_score": 30,
+        "reason": "Q1 FY2026 기록적인 실적과 견조한 영업 현금 흐름을 기록했습니다. 부채비율은 1.03으로 개선되었고, 매출 총이익률은 47.33%로 업계 최고 수준을 유지합니다."
+      },
+      {
+        "category": "Technical Trend & Smart Money",
+        "score": 18,
+        "max_score": 20,
+        "reason": "주가가 주요 이동평균선 위에 견고하게 자리 잡았으며, 거래량 증가와 Smart Score 9점은 스마트 머니의 긍정적인 포지셔닝을 나타냅니다."
+      },
+      {
+        "category": "Catalysts & Market Sentiment",
+        "score": 19,
+        "max_score": 20,
+        "reason": "Apple Intelligence, MacBook Neo, 폴더블 아이폰 등 다수의 신제품 출시와 서비스 부문 성장이 강력한 모멘텀을 제공하며, 시장은 긍정적인 기대를 갖고 있습니다."
+      }
+    ]
+  },
+  "verdict": "BUY",
+  "executive_summary": [
+    "Q1 FY2026 실적은 기록적인 매출과 견조한 서비스 성장을 보여, 견고한 펀더멘털을 입증했습니다.",
+    "Apple Intelligence 및 MacBook Neo, 폴더블 아이폰 등 다가오는 신제품 라인업은 강력한 성장 동력으로 작용할 것입니다.",
+    "주가는 주요 이동평균선 위에 안착하며 기술적으로 강세를 유지하고 있으며, 애널리스트 컨센서스는 '매수' 의견입니다.",
+    "하지만 높은 밸류에이션과 앱스토어 관련 규제 위험은 잠재적 리스크로 작용할 수 있습니다."
+  ],
+  "bull_case_summary": [
+    "Apple Intelligence를 중심으로 한 강력한 AI 기능 통합과 폴더블 아이폰 출시가 맞물려 아이폰 교체 주기를 가속화하며 전례 없는 매출 증대를 이끌 것입니다.",
+    "서비스 부문의 지속적인 고마진 성장과 인도 생산 확대를 통한 공급망 안정화는 장기적인 수익성을 더욱 강화할 것입니다."
+  ],
+  "bear_case_summary": [
+    "앱스토어 정책에 대한 미국 법무부 및 유럽연합의 규제 강화는 서비스 매출에 심각한 타격을 줄 수 있으며, 중국 시장에서의 경쟁 심화는 핵심 아이폰 판매를 위협할 수 있습니다.",
+    "Vision Pro의 더딘 시장 채택과 차세대 AI 전략의 실망은 애플의 혁신 리더십에 대한 의문을 제기하며 주가 하방 압력으로 작용할 것입니다."
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "investment_score": {
+    "total": 85,
+    "breakdown": [
+      {
+        "category": "Valuation (vs Peers)",
+        "score": 22,
+        "max_score": 30,
+        "reason": "높은 P/E 비율에도 불구하고, AI 및 데이터센터 부문의 폭발적인 성장 예상과 경쟁사 대비 상대적인 가치평가 매력이 존재합니다."
+      },
+      {
+        "category": "Fundamental Health & FCF",
+        "score": 28,
+        "max_score": 30,
+        "reason": "2025년 기록적인 매출 및 이익을 달성했으며, 부채비율은 매우 낮고 잉여현금흐름이 견고하여 재무 건전성이 탁월합니다."
+      },
+      {
+        "category": "Technical Trend & Smart Money",
+        "score": 18,
+        "max_score": 20,
+        "reason": "최근 수개월간 강력한 상승 추세와 기관 투자자들의 지속적인 매수세가 관찰되며, 주요 저항선을 돌파했습니다."
+      },
+      {
+        "category": "Catalysts & Market Sentiment",
+        "score": 17,
+        "max_score": 20,
+        "reason": "AI 가속기 신제품 출시, 메타 및 OpenAI와의 대규모 파트너십, 그리고 긍정적인 애널리스트 전망이 강력한 상승 모멘텀으로 작용하고 있습니다."
+      }
+    ]
+  },
+  "verdict": "BUY",
+  "executive_summary": [
+    "AMD는 2025년 데이터센터 및 AI 부문의 폭발적인 성장에 힘입어 기록적인 연간 매출과 이익을 달성했습니다.",
+    "OpenAI 및 Meta와의 전략적 파트너십을 통해 AI 가속기 시장에서의 입지를 확고히 하며 장기적인 매출 가시성을 확보했습니다.",
+    "매우 낮은 부채비율과 강력한 잉여현금흐름을 바탕으로 뛰어난 재무 건전성을 유지하고 있어 안정적인 성장이 기대됩니다.",
+    "CES 2026에서 발표된 Ryzen AI 프로세서 및 2026년 하반기 출시될 Zen 6 EPYC CPU는 PC 및 서버 시장에서 AMD의 경쟁 우위를 더욱 강화할 것입니다."
+  ],
+  "bull_case_summary": "AMD는 강력한 AI 칩 수요와 데이터센터 확장에 힘입어 시장 예상치를 지속적으로 뛰어넘는 실적을 발표할 것이며, MI450 플랫폼 및 Zen 6 EPYC 프로세서의 성공적인 출시는 주가를 $400 이상으로 견인할 잠재력이 있습니다.",
+  "bear_case_summary": "AI 경쟁 심화와 콘솔 시장의 사이클 하락으로 인한 게이밍 부문 매출 둔화는 AMD의 성장 모멘텀을 약화시킬 수 있으며, 현재 높은 밸류에이션은 시장 기대치에 미치지 못할 경우 급격한 조정으로 이어질 수 있습니다."
+}

@@ -71,6 +71,7 @@ Content begins on the next line.
             model: model,
             prompt: prompt,
             temperature: 0.7,
+            maxRetries: 10, // Increase retries to handle 503 High Demand errors
         });
 
         // 3. Parse the Title and Content

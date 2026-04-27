@@ -214,106 +214,118 @@ async function analyzeTickerLocal(tickerInput, numericTicker, reportType = "rese
     const prompt = reportType === "earnings" ? earningsPrompt : researchPrompt;
 
     for (const modelName of modelsToTry) {
-        try {
-            console.log(`Trying model: ${modelName} for ${reportType} of ${tickerInput}...`);
+        let attempt = 0;
+        const maxAttempts = 5;
+        let success = false;
 
-            const currentModel = genAI.getGenerativeModel({
-                model: modelName,
-                tools: tools,
-            }, { apiVersion: "v1beta" });
-
-            const result = await currentModel.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text();
-
-            let jsonString = "";
-            let finalMarkdown = "";
-
-            if (reportType === "research") {
-                const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || text.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error("No JSON block found in research response");
-                }
-                jsonString = jsonMatch[1] || jsonMatch[0];
-                finalMarkdown = text.replace(jsonMatch[0], '').replace(/```json/gi, '').replace(/```/g, '').trim();
-            } else {
-                let cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-                const start = cleanText.indexOf('{');
-                const end = cleanText.lastIndexOf('}');
-                if (start !== -1 && end !== -1) {
-                    cleanText = cleanText.substring(start, end + 1);
-                }
-                const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error("No JSON found in earnings response");
-                jsonString = jsonMatch[0];
-            }
-
-            if (jsonString.includes("SOURCE_DATA_MISSING")) {
-                console.error("Error: SOURCE_DATA_MISSING.");
-                return;
-            }
-
-            let analysis;
+        while (attempt < maxAttempts && !success) {
             try {
-                analysis = JSON.parse(jsonString);
+                console.log(`Trying model: ${modelName} for ${reportType} of ${tickerInput} (Attempt ${attempt + 1}/${maxAttempts})...`);
+
+                const currentModel = genAI.getGenerativeModel({
+                    model: modelName,
+                    tools: tools,
+                }, { apiVersion: "v1beta" });
+
+                const result = await currentModel.generateContent(prompt);
+                const response = await result.response;
+                let text = response.text();
+
+                let jsonString = "";
+                let finalMarkdown = "";
 
                 if (reportType === "research") {
-                    if (!analysis.executive_summary) throw new Error("Missing executive_summary");
-                    if (analysis.detailed_report_markdown && finalMarkdown.length < 100) {
-                        finalMarkdown = analysis.detailed_report_markdown;
+                    const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || text.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error("No JSON block found in research response");
                     }
-                    finalMarkdown += '\n\n<!-- SCORE_BREAKDOWN: ' + JSON.stringify(analysis.investment_score) + ' -->';
-                }
-            } catch (e) {
-                console.error(`JSON Parse/Validation Error (${modelName}):`, e);
-                errorLog.push(`${modelName}: JSON Parse error - ${e.message}`);
-                continue;
-            }
-            
-            // Save to Local Output Folder
-            const outputDir = path.join(process.cwd(), 'output_reports');
-            if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-            
-            const sanitizedTicker = tickerInput.replace(/[^a-zA-Z0-9가-힣]/g, '');
-            const jsonFilename = path.join(outputDir, `${sanitizedTicker}_${reportType}.json`);
-            fs.writeFileSync(jsonFilename, JSON.stringify(analysis, null, 2));
-            if (reportType === "research") {
-                 const mdFilename = path.join(outputDir, `${sanitizedTicker}_${reportType}.md`);
-                 fs.writeFileSync(mdFilename, finalMarkdown);
-            }
-            
-            try {
-                const { error } = await supabase
-                    .from('reports')
-                    .insert({
-                        ticker: tickerInput.toUpperCase(),
-                        risk_score: analysis.investment_score?.total || 50,
-                        verdict: analysis.verdict || "HOLD",
-                        one_line_summary: analysis.executive_summary,
-                        detailed_report: finalMarkdown,
-                        analysis_text: JSON.stringify(analysis),
-                        report_type: reportType,
-                        quarter: quarter || null
-                    });
-
-                if (error) {
-                    console.error("Supabase Save Warning (Network Error):", error.message);
+                    jsonString = jsonMatch[1] || jsonMatch[0];
+                    finalMarkdown = text.replace(jsonMatch[0], '').replace(/```json/gi, '').replace(/```/g, '').trim();
                 } else {
-                    console.log(`Successfully saved ${reportType} report to Supabase for ${tickerInput}!`);
+                    let cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const start = cleanText.indexOf('{');
+                    const end = cleanText.lastIndexOf('}');
+                    if (start !== -1 && end !== -1) {
+                        cleanText = cleanText.substring(start, end + 1);
+                    }
+                    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) throw new Error("No JSON found in earnings response");
+                    jsonString = jsonMatch[0];
                 }
-            } catch (err) {
-                 console.error("Supabase Save Error (ignoring):", err.message);
-            }
-            return;
 
-        } catch (error) {
-            console.error(`Model ${modelName} failed for ${tickerInput}:`, error.message);
-            errorLog.push(`${modelName}: ${error.message}`);
-            
-            if (!error.message?.includes("429")) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (jsonString.includes("SOURCE_DATA_MISSING")) {
+                    console.error("Error: SOURCE_DATA_MISSING.");
+                    return;
+                }
+
+                let analysis;
+                try {
+                    analysis = JSON.parse(jsonString);
+
+                    if (reportType === "research") {
+                        if (!analysis.executive_summary) throw new Error("Missing executive_summary");
+                        if (analysis.detailed_report_markdown && finalMarkdown.length < 100) {
+                            finalMarkdown = analysis.detailed_report_markdown;
+                        }
+                        finalMarkdown += '\n\n<!-- SCORE_BREAKDOWN: ' + JSON.stringify(analysis.investment_score) + ' -->';
+                    }
+                } catch (e) {
+                    console.error(`JSON Parse/Validation Error (${modelName}):`, e);
+                    throw new Error(`JSON Parse error - ${e.message}`);
+                }
+                
+                // Save to Local Output Folder
+                const outputDir = path.join(process.cwd(), 'output_reports');
+                if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+                
+                const sanitizedTicker = tickerInput.replace(/[^a-zA-Z0-9가-힣]/g, '');
+                const jsonFilename = path.join(outputDir, `${sanitizedTicker}_${reportType}.json`);
+                fs.writeFileSync(jsonFilename, JSON.stringify(analysis, null, 2));
+                if (reportType === "research") {
+                     const mdFilename = path.join(outputDir, `${sanitizedTicker}_${reportType}.md`);
+                     fs.writeFileSync(mdFilename, finalMarkdown);
+                }
+                
+                try {
+                    const { error } = await supabase
+                        .from('reports')
+                        .insert({
+                            ticker: tickerInput.toUpperCase(),
+                            risk_score: analysis.investment_score?.total || 50,
+                            verdict: analysis.verdict || "HOLD",
+                            one_line_summary: analysis.executive_summary,
+                            detailed_report: finalMarkdown,
+                            analysis_text: JSON.stringify(analysis),
+                            report_type: reportType,
+                            quarter: quarter || null
+                        });
+
+                    if (error) {
+                        console.error("Supabase Save Warning (Network Error):", error.message);
+                    } else {
+                        console.log(`Successfully saved ${reportType} report to Supabase for ${tickerInput}!`);
+                    }
+                } catch (err) {
+                     console.error("Supabase Save Error (ignoring):", err.message);
+                }
+                
+                success = true; // Mark as successful to break out of while loop
+                return; // Everything completed, return from analyzeTickerLocal
+
+            } catch (error) {
+                attempt++;
+                console.error(`Attempt ${attempt} failed for model ${modelName} on ${tickerInput}:`, error.message);
+                
+                if (attempt < maxAttempts) {
+                    // Exponential backoff: 5s, 10s, 20s, 40s (max 60s)
+                    const waitMs = Math.min(5000 * Math.pow(2, attempt - 1), 60000);
+                    console.log(`High demand or error. Waiting ${waitMs / 1000} seconds before retrying...`);
+                    await new Promise(resolve => setTimeout(resolve, waitMs));
+                } else {
+                    errorLog.push(`${modelName}: ${error.message}`);
+                    console.error(`Gave up after ${maxAttempts} attempts for ${tickerInput}.`);
+                }
             }
-            continue;
         }
     }
 }

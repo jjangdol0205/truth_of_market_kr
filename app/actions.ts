@@ -13,13 +13,28 @@ export async function resolveYahooTickerServer(ticker: string) {
     return resolveYahooTicker(ticker);
 }
 
+const US_TICKER_MAP: Record<string, string> = {
+    "APPLE": "AAPL",
+    "NVIDIA": "NVDA",
+    "TESLA": "TSLA",
+    "MICROSOFT": "MSFT",
+    "AMAZON": "AMZN",
+    "ALPHABET": "GOOGL",
+    "META": "META",
+    "BROADCOM": "AVGO",
+    "PALANTIR": "PLTR",
+    "AMD": "AMD"
+};
+
 export async function fetchLivePricesServer(tickers: string[]) {
     // 1. Resolve all tickers to Yahoo Symbols concurrently
     const resolvedPromises = tickers.map(async (ticker) => {
         let queryTicker = ticker;
         const numericTicker = getTickerFromName(ticker);
 
-        if (numericTicker) {
+        if (US_TICKER_MAP[ticker.toUpperCase()]) {
+            queryTicker = US_TICKER_MAP[ticker.toUpperCase()];
+        } else if (numericTicker) {
             queryTicker = await resolveYahooTicker(numericTicker);
         } else if (/^\d+$/.test(ticker)) {
             queryTicker = await resolveYahooTicker(ticker);

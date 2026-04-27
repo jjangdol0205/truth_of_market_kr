@@ -44,7 +44,9 @@ export default function StockCard({ ticker, name, price, changePercent, isFreeSa
                 </div>
 
                 <div className="text-right relative z-10">
-                    <p className="text-xl font-bold text-white tracking-tight">{typeof price === 'number' ? `₩${price.toLocaleString('ko-KR')}` : price}</p>
+                    <p className="text-xl font-bold text-white tracking-tight">
+                        {typeof price === 'number' ? (country === 'US' ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `₩${price.toLocaleString('ko-KR')}`) : price}
+                    </p>
                     <p className={`text-sm font-bold ${colorClass} tracking-tight`}>
                         {sign}{typeof changePercent === 'number' ? changePercent.toFixed(2) : changePercent}%
                     </p>

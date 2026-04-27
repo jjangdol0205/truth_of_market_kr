@@ -63,7 +63,7 @@ export default function Home() {
       // Merge the fetched data with our dynamic watchlist details
       const trendingStocks = uniqueTickers.map((ticker: any) => {
         const liveData = quotesData.find(q => q.symbol === ticker);
-        const isKR = /^\d+$/.test(ticker) || ticker.includes('.KS') || ticker.includes('.KQ') || /[가-힣]/.test(ticker);
+        const isKR = getTickerFromName(ticker) !== null || /^\d+$/.test(ticker) || ticker.includes('.KS') || ticker.includes('.KQ') || /[가-힣]/.test(ticker);
 
         return {
           ticker: ticker,

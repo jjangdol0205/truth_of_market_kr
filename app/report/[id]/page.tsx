@@ -10,6 +10,7 @@ import ShareButtons from "../../components/ShareButtons";
 import CompanyLogo from "../../../components/CompanyLogo";
 import { getTickerFromName } from "../../../utils/krx";
 import CoupangSearch from "../../../components/CoupangSearch";
+import CoupangCategory from "../../../components/CoupangCategory";
 import CoupangNativeAd from "../../../components/CoupangNativeAd";
 import ScrollIntentAd from "../../../components/ScrollIntentAd";
 import { Metadata, ResolvingMetadata } from "next";

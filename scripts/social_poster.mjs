@@ -27,6 +27,10 @@ const twitterClient = process.env.TWITTER_API_KEY ? new TwitterApi({
 const THREADS_ACCESS_TOKEN = process.env.THREADS_ACCESS_TOKEN;
 const THREADS_USER_ID = process.env.THREADS_USER_ID;
 
+// Telegram Credentials
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://truthofmarket.com';
 
 async function postToTwitter(text) {
@@ -73,6 +77,34 @@ async function postToThreads(text) {
     }
 }
 
+async function postToTelegram(text) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+        console.log('Telegram API keys not provided. Skipping Telegram post.');
+        return;
+    }
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: text,
+                disable_web_page_preview: false
+            })
+        });
+        
+        const data = await response.json();
+        if (data.ok) {
+            console.log('✅ Successfully posted to Telegram!');
+        } else {
+            console.error('❌ Failed to post to Telegram:', data.description);
+        }
+    } catch (error) {
+        console.error('❌ Failed to post to Telegram:', error);
+    }
+}
+
 async function run() {
     console.log('🤖 Starting Social Poster Bot...');
     
@@ -110,6 +142,7 @@ async function run() {
 
     await postToTwitter(postText);
     await postToThreads(postText);
+    await postToTelegram(postText);
     
     console.log('🏁 Social Poster Bot Finished.');
 }

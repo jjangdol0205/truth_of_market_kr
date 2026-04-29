@@ -287,21 +287,47 @@ async function analyzeTickerLocal(tickerInput, numericTicker, reportType = "rese
                 }
                 
                 try {
-                    const { error } = await supabase
-                        .from('reports')
-                        .insert({
-                            ticker: tickerInput.toUpperCase(),
-                            risk_score: analysis.investment_score?.total || 50,
-                            verdict: analysis.verdict || "HOLD",
-                            one_line_summary: analysis.executive_summary,
-                            detailed_report: finalMarkdown,
-                            analysis_text: JSON.stringify(analysis),
-                            report_type: reportType,
-                            quarter: quarter || null
-                        });
+                    const payload = {
+                        ticker: tickerInput.toUpperCase(),
+                        risk_score: analysis.investment_score?.total || 50,
+                        verdict: analysis.verdict || "HOLD",
+                        one_line_summary: analysis.executive_summary,
+                        detailed_report: finalMarkdown,
+                        analysis_text: JSON.stringify(analysis),
+                        report_type: reportType,
+                        quarter: quarter || null,
+                        created_at: new Date().toISOString()
+                    };
 
-                    if (error) {
-                        console.error("Supabase Save Warning (Network Error):", error.message);
+                    const { data: existing } = await supabase
+                        .from('reports')
+                        .select('id')
+                        .eq('ticker', tickerInput.toUpperCase())
+                        .eq('report_type', reportType)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    let saveError;
+                    if (existing && existing.length > 0) {
+                        const existingId = existing[0].id;
+                        const res = await supabase.from('reports').update(payload).eq('id', existingId);
+                        saveError = res.error;
+                        
+                        if (!saveError) {
+                            // Delete any older duplicates to keep the DB clean
+                            await supabase.from('reports')
+                                .delete()
+                                .eq('ticker', tickerInput.toUpperCase())
+                                .eq('report_type', reportType)
+                                .neq('id', existingId);
+                        }
+                    } else {
+                        const res = await supabase.from('reports').insert(payload);
+                        saveError = res.error;
+                    }
+
+                    if (saveError) {
+                        console.error("Supabase Save Warning (Network Error):", saveError.message);
                     } else {
                         console.log(`Successfully saved ${reportType} report to Supabase for ${tickerInput}!`);
                     }

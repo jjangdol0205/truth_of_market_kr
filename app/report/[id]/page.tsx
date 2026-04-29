@@ -9,10 +9,7 @@ import { createClient } from "../../../utils/supabase/server";
 import ShareButtons from "../../components/ShareButtons";
 import CompanyLogo from "../../../components/CompanyLogo";
 import { getTickerFromName } from "../../../utils/krx";
-import CoupangSearch from "../../../components/CoupangSearch";
-import CoupangCategory from "../../../components/CoupangCategory";
-import CoupangNativeAd from "../../../components/CoupangNativeAd";
-import ScrollIntentAd from "../../../components/ScrollIntentAd";
+import UnlockInterstitialAd from "../../../components/UnlockInterstitialAd";
 import { Metadata, ResolvingMetadata } from "next";
 
 // Force dynamic rendering since we are fetching data that changes
@@ -205,9 +202,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 </div>
             </section>
 
-            {/* Affiliate Marketing Integration - Native Ad */}
-            <CoupangNativeAd ticker={report.ticker === 'TSLA' ? 'TESLA' : report.ticker} />
-
             {/* Always Visible: TradingView Chart Link */}
             <section className="w-full flex justify-center py-4">
                 <a
@@ -228,24 +222,21 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             </section>
 
             {/* Report Content */}
-            <section className="mt-8">
-                <div className="bg-toss-card rounded-3xl md:p-10 p-6">
-                    <div className="prose prose-invert prose-lg max-w-none prose-headings:mt-10 prose-headings:font-extrabold prose-h1:text-4xl prose-h2:text-3xl prose-p:leading-loose prose-p:text-zinc-300 prose-p:mb-8 prose-li:mb-3">
-                        {cleanMarkdown ? (
-                            <ReactMarkdown remarkPlugins={[remarkBreaks]}>{cleanMarkdown}</ReactMarkdown>
-                        ) : (
-                            <pre className=" text-gray-300 whitespace-pre-wrap">
-                                {report.analysis_text}
-                            </pre>
-                        )}
+            <UnlockInterstitialAd>
+                <section className="mt-8">
+                    <div className="bg-toss-card rounded-3xl md:p-10 p-6">
+                        <div className="prose prose-invert prose-lg max-w-none prose-headings:mt-10 prose-headings:font-extrabold prose-h1:text-4xl prose-h2:text-3xl prose-p:leading-loose prose-p:text-zinc-300 prose-p:mb-8 prose-li:mb-3">
+                            {cleanMarkdown ? (
+                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>{cleanMarkdown}</ReactMarkdown>
+                            ) : (
+                                <pre className=" text-gray-300 whitespace-pre-wrap">
+                                    {report.analysis_text}
+                                </pre>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </section>
-
-            {/* Affiliate Marketing Integration - Category Banner at bottom */}
-            <CoupangCategory />
-
-            <ScrollIntentAd />
+                </section>
+            </UnlockInterstitialAd>
         </div>
     );
 }

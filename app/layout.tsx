@@ -3,7 +3,6 @@ import "./globals.css";
 import TopNav from "./components/TopNav";
 import DisableCopy from "@/components/DisableCopy";
 import FloatingShopButton from "@/components/FloatingShopButton";
-import StickyMobileAd from "@/components/StickyMobileAd";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -39,7 +38,6 @@ export default function RootLayout({
           </main>
 
           <FloatingShopButton />
-          <StickyMobileAd />
           
           {/* Footer */}
           <footer className="border-t border-toss-border py-6 mb-16 sm:mb-0 text-center text-xs text-zinc-500 font-medium">

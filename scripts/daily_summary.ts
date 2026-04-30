@@ -65,14 +65,26 @@ TITLE: [전문적인 한국어 제목]
 Content begins on the next line.
 `;
 
-        const model = google("gemini-2.5-flash");
-
-        const { text } = await generateText({
-            model: model,
-            prompt: prompt,
-            temperature: 0.7,
-            maxRetries: 10, // Increase retries to handle 503 High Demand errors
-        });
+        let text = "";
+        try {
+            const { text: generatedText } = await generateText({
+                model: google("gemini-2.5-flash"),
+                prompt: prompt,
+                temperature: 0.7,
+                maxRetries: 5,
+            });
+            text = generatedText;
+        } catch (error) {
+            console.warn("[Script] gemini-2.5-flash failed (likely 503 High Demand). Waiting 10s and trying gemini-1.5-flash fallback...");
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            const { text: fallbackText } = await generateText({
+                model: google("gemini-1.5-flash"),
+                prompt: prompt,
+                temperature: 0.7,
+                maxRetries: 5,
+            });
+            text = fallbackText;
+        }
 
         // 3. Parse the Title and Content
         let title = `마켓 브리핑: ${dateStr}`;

@@ -125,7 +125,7 @@ export default function UnlockInterstitialAd({ children }: { children: React.Rea
                                     <Loader2 className="w-8 h-8 animate-spin mb-4" />
                                     <p>추천 상품을 불러오는 중입니다...</p>
                                 </div>
-                            ) : (
+                            ) : products.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {products.map((product) => (
                                         <div 
@@ -151,6 +151,20 @@ export default function UnlockInterstitialAd({ children }: { children: React.Rea
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+                                    <p className="mb-6">현재 스폰서 상품을 불러올 수 없습니다.</p>
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.setItem('truth_of_market_unlocked', new Date().getTime().toString());
+                                            setIsUnlocked(true);
+                                            setShowModal(false);
+                                        }}
+                                        className="bg-toss-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-toss-blue/90 shadow-lg"
+                                    >
+                                        바로 열람하기 (광고 패스)
+                                    </button>
                                 </div>
                             )}
                             

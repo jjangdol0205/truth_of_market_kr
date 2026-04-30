@@ -2,8 +2,8 @@ name: Auto Pilot Bot (Market Briefing & Deep Research)
 
 on:
   schedule:
-    # Runs at 10:00 UTC (19:00 KST) and 22:00 UTC (07:00 KST) Monday to Friday
-    - cron: '0 10,22 * * 1-5'
+    # Runs at 10:00 UTC (19:00 KST) and 22:00 UTC (07:00 KST) every day
+    - cron: '0 10,22 * * *'
   # Allows triggering the workflow manually from GitHub UI
   workflow_dispatch:
 

@@ -5,13 +5,32 @@ import tickerToNameMap from './ticker_to_name.json';
 const nameToTicker = nameToTickerMap as Record<string, string>;
 const tickerToName = tickerToNameMap as Record<string, string>;
 
+const usNameToTicker: Record<string, string> = {
+    "NVIDIA": "NVDA",
+    "APPLE": "AAPL",
+    "MICROSOFT": "MSFT",
+    "TESLA": "TSLA",
+    "META": "META",
+    "AMAZON": "AMZN",
+    "ALPHABET": "GOOGL",
+    "AMD": "AMD",
+    "PALANTIR": "PLTR",
+    "BROADCOM": "AVGO"
+};
+
 export function getKoreanName(ticker: string): string {
     return tickerToName[ticker] || ticker;
 }
 
 export function getTickerFromName(name: string): string | null {
+    const upperName = name.toUpperCase();
+    
+    // US Stocks match
+    if (usNameToTicker[upperName]) return usNameToTicker[upperName];
+
     // Exact match
     if (nameToTicker[name]) return nameToTicker[name];
+    if (nameToTicker[upperName]) return nameToTicker[upperName];
 
     // Fallback: If they entered a valid numeric ticker directly, return it
     if (/^[0-9]{6}$/.test(name) && tickerToName[name]) return name;

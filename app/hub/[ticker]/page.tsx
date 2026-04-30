@@ -61,6 +61,9 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
         }
     } else if (/^\d+$/.test(ticker)) {
         queryTicker = await resolveYahooTicker(ticker);
+    } else if (numericTicker) {
+        // This is for US Stocks mapped from name (e.g., AMAZON -> AMZN)
+        queryTicker = numericTicker;
     } else if (ticker === "LNK") {
         queryTicker = "LINK-USD";
     }
@@ -106,6 +109,11 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
     }
     const isTargetPositive = upsidePercent >= 0;
     const targetColorClass = isTargetPositive ? "text-toss-red" : "text-toss-blue";
+    
+    // Determine Currency and Country
+    const isKorean = /[가-힣]/.test(ticker) || /^\d+$/.test(ticker) || queryTicker.endsWith('.KS') || queryTicker.endsWith('.KQ');
+    const currencySymbol = isKorean ? "₩" : "$";
+    const countryFlag = isKorean ? "🇰🇷" : "🇺🇸";
 
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6 space-y-8 mb-20 font-sans">
@@ -125,7 +133,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                         />
                         <div>
                             <h1 className="text-5xl font-black tracking-tighter text-white mb-1">
-                                {getKoreanName(ticker)}
+                                {getKoreanName(ticker)} <span className="text-3xl ml-2">{countryFlag}</span>
                             </h1>
                             <p className="text-indigo-500 flex items-center  text-xs font-bold tracking-tight uppercase mb-1">
                                 <Activity className="w-3 h-3 mr-1" /> 인증된 기업 허브
@@ -140,7 +148,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                             <p className="text-xs text-zinc-500 uppercase tracking-tight font-bold mb-1 ml-2">실시간 시장 데이터</p>
                             <div className="flex items-baseline md:justify-end gap-3 ml-2">
                                 <h2 className="text-4xl font-black text-white ">
-                                    ₩{livePrice ? livePrice.toLocaleString('ko-KR') : "0"}
+                                    {currencySymbol}{livePrice ? (isKorean ? livePrice.toLocaleString('ko-KR') : livePrice.toLocaleString('en-US', {minimumFractionDigits: 2})) : "0"}
                                 </h2>
                                 <span className={` text-lg font-bold ${colorClass}`}>
                                     {isPositive ? "+" : ""}{changePercent ? changePercent.toFixed(2) : "0.00"}%
@@ -160,7 +168,7 @@ export default async function CompanyHubPage({ params }: { params: Promise<{ tic
                                 </div>
                                 <div className="flex items-baseline md:justify-end gap-3 ml-2">
                                     <h2 className="text-2xl font-black text-white ">
-                                        ₩{targetMeanPrice.toLocaleString('ko-KR')}
+                                        {currencySymbol}{targetMeanPrice ? (isKorean ? targetMeanPrice.toLocaleString('ko-KR') : targetMeanPrice.toLocaleString('en-US', {minimumFractionDigits: 2})) : "0"}
                                     </h2>
                                     <span className={` text-sm font-bold bg-toss-card px-2 py-0.5 rounded border border-toss-border ${targetColorClass}`}>
                                         {isTargetPositive ? "+" : ""}{upsidePercent.toFixed(2)}% 상승 여력
